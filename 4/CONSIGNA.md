@@ -1,3 +1,5 @@
+ctrl + mayus + v -> previsualiza markdown
+
 # Sistema de Administración de Concesionario - Aplicación Práctica de POO
 
 ## Objetivo
