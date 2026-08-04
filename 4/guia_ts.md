@@ -1,9 +1,3 @@
-¡Me parece una idea espectacular! Esta guía les va a venir increíble a todos los alumnos, porque estas dudas suelen ser de las que frenan mucho el aprendizaje al principio (y muchos no se animan a preguntar).
-
-Acá tenés la guía armada y estructurada con el mismo tono docente, lista para que la copies y la pegues en el canal de anuncios, Discord o el campus virtual:
-
-***
-
 # 🚀 Guía: Cómo estructurar tus proyectos en TypeScript (y no morir en el intento)
 
 ¡Hola a todos! A partir de varias consultas súper interesantes que me estuvieron haciendo, preparé esta guía rápida. Si al arrancar un proyecto desde cero no saben por dónde empezar, o sienten que al escribir código el editor se les llena de errores rojos por todos lados, ¡esto es para ustedes!
