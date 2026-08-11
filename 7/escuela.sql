@@ -1,27 +1,3 @@
--- =====================================================================
---  BASE `escuela` — dataset canónico del curso
--- =====================================================================
---
---  Es la base que se usa de la Etapa 5 en adelante. Trae la estructura
---  completa y los datos cargados.
---
---  Origen: adaptada de `tema-08-mysql-scripts-sql/escuela-completa.sql`
---  (dump de cursadas anteriores). Se reescribió entera:
---    · nombres de tabla en SINGULAR   (docente, estudiante, materia, inscripcion)
---    · nombres de columna en snake_case
---    · sin la basura del dump (/*!40101 ... */, LOCK TABLES, etc.)
---    · con las restricciones que se ven en la Etapa 4
---
---  Se puede ejecutar las veces que haga falta: borra y recrea todo.
---
---  ⚠️ IMPORTANTE: esto reemplaza la `escuela` que armaste a mano en las
---     Etapas 3 y 4. Es el mismo esquema, ahora con datos.
---
---  📌 Las FOREIGN KEY y la tabla `inscripcion` se explican en las
---     Etapas 7 y 8. Por ahora ejecutalo y no te preocupes por esas líneas.
--- =====================================================================
-
-
 CREATE DATABASE IF NOT EXISTS escuela
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
