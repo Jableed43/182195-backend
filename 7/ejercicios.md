@@ -90,20 +90,61 @@ limit 5`
 
 ## BLOQUE 6 — Funciones de agregación
 30. **6.1 COUNT general:** Arma una consulta para obtener la cantidad total de registros en la tabla `inscripcion`.
+ `SELECT COUNT(*) AS total_inscripciones from inscripcion`
+
+**Extra: cuantos a cuantas materias se anoto cada estudiante?**
+`SELECT idestudiante, COUNT(*) AS cantidad_materias
+from inscripcion
+group by idestudiante`
+
 31. **6.2 COUNT específico:** Arma una consulta para obtener en la misma fila: el total de registros en `inscripcion` y la cantidad de inscripciones que sí tienen una `nota`.
+
+`SELECT COUNT(*) AS filas_totales,
+	COUNT(nota) AS filas_con_nota
+FROM inscripcion`
+
 32. **6.3 AVG, MIN, MAX:** Arma una consulta para obtener el promedio de notas (redondeado a 2 decimales), la peor nota y la mejor nota de toda la tabla `inscripcion`.
+
+`SELECT ROUND(AVG(nota), 2) as promedio,
+MIN(nota) as peor,
+MAX(nota) as mejor
+from inscripcion`
+
 33. **6.5 SUM:** Arma una consulta para obtener la suma total de `creditos` de todas las materias.
+`SELECT SUM(creditos) AS creditos_totales FROM materia;`
 34. **6.6 Agregación + Filtro:** Arma una consulta para obtener la cantidad total de inscripciones que tienen una nota igual o mayor a 7.
+`SELECT COUNT(*) AS aprobados from inscripcion WHERE nota >= 7 
+#Desaprobados
+SELECT COUNT(*) AS desaprobados from inscripcion WHERE nota < 7 `
 
 ## BLOQUE 7 — GROUP BY: agrupar antes de calcular
 35. **7.1:** Arma una consulta para obtener la cantidad de materias que dicta cada docente.
+`SELECT docente_id, COUNT(*) AS cantidad_materias
+from materia
+group by docente_id`
 36. **7.2:** Arma una consulta para obtener la cantidad de inscriptos que tiene cada materia, ordenado de mayor a menor cantidad de inscriptos.
+`select idmateria, count(*) as inscriptos
+from inscripcion
+group by idmateria
+order by inscriptos DESC`
 37. **7.3:** Arma una consulta para obtener, por cada `idmateria`, su cantidad de inscriptos y el promedio de notas (redondeado a 2 decimales), ordenado del mejor promedio al peor.
 38. **7.4:** Arma una consulta para obtener la cantidad de materias en las que está inscripto cada estudiante, ordenado de mayor a menor cantidad.
 
 ## BLOQUE 8 — HAVING: filtrar grupos
+Diferencia having y where
+--     WHERE  filtra FILAS   ANTES de agrupar
+--     HAVING filtra GRUPOS  DESPUÉS de agrupar
 39. **8.2:** Arma una consulta para obtener el `idmateria` y la cantidad de inscriptos, solo para aquellas materias que tengan más de 5 inscriptos.
+`SELECT idmateria, COUNT(*) AS inscriptos
+FROM inscripcion
+GROUP BY idmateria
+HAVING inscriptos > 5;`
 40. **8.3:** Arma una consulta para obtener el `idestudiante` y la cantidad de materias en las que está, solo para aquellos que cursen 4 materias o más, ordenado de mayor a menor cantidad.
+SELECT idestudiante, COUNT(*) AS materias
+FROM inscripcion
+GROUP BY idestudiante
+HAVING materias >= 4
+ORDER BY materias DESC;
 41. **8.4:** Arma una consulta para obtener las materias que tengan un promedio de `nota` mayor a 8.5. Muestra el promedio redondeado y ordena de mayor a menor.
 42. **8.5:** Arma una consulta para obtener los docentes (su `docente_id`) y su cantidad de materias asignadas, solo para aquellos que tengan más de 5 materias asignadas.
 43. **8.6 WHERE + HAVING:** Arma una consulta para obtener las materias mostrando cantidad de inscriptos y promedio de notas, pero evaluando únicamente a los alumnos con nota asignada, y filtrando al final para que solo se muestren las materias que tengan al menos 3 registros con nota. Ordena de mayor a menor promedio.

@@ -39,14 +39,25 @@ Si el número no coincide, algo está mal — casi siempre es el tipo de JOIN o 
 Mostrá **nombre**, **apellido** del estudiante y la **nota** de cada inscripción.
 
 ```sql
-
+SELECT estudiante.nombre, estudiante.apellido, materia.nombre AS materia, inscripcion.nota
+# inscripcion se relaciona con estudiante y con materia
+# por eso esta en el from
+from inscripcion
+# inscripcion -> estudiante
+INNER JOIN 
+estudiante ON inscripcion.idestudiante = estudiante.idestudiante
+# inscripcion -> materia
+INNER JOIN
+materia ON inscripcion.idmateria = materia.idmateria
 ```
 
 ### 1.2 — Cada materia con su docente *(→ 30 filas)*
 Mostrá el **nombre de la materia**, y el **nombre y apellido** del docente que la dicta.
 
 ```sql
-
+SELECT materia.nombre, docente.nombre, docente.apellido, docente.especialidad, docente.email, materia.codigo
+FROM materia
+INNER JOIN docente on materia.docente_id = docente.iddocente
 ```
 
 ### 1.3 — Las materias de una docente *(→ 7 filas)*
@@ -93,7 +104,11 @@ Los que no cursan nada **también tienen que aparecer**.
 ### 2.2 — Todas las materias, tengan inscriptos o no *(→ 65 filas)*
 
 ```sql
-
+SELECT estudiante.idestudiante, estudiante.nombre, estudiante.apellido,
+inscripcion.idmateria, inscripcion.nota
+FROM estudiante
+LEFT JOIN inscripcion on estudiante.idestudiante = inscripcion.idestudiante
+ORDER BY estudiante.idestudiante
 ```
 
 ### 2.3 — ⭐ Los que no cursan nada *(→ 8 filas)*
@@ -102,13 +117,25 @@ Mostrá **nombre y apellido** de los estudiantes que **no están inscriptos en n
 > 💡 Es el patrón `LEFT JOIN` + `WHERE ... IS NULL`.
 
 ```sql
+SELECT estudiante.nombre, estudiante.apellido, estudiante.idestudiante
+FROM estudiante
+LEFT JOIN inscripcion on estudiante.idestudiante = inscripcion.idestudiante
+WHERE inscripcion.idinscripcion IS NULL;
 
+SELECT estudiante.nombre, estudiante.apellido, estudiante.idestudiante
+FROM inscripcion
+RIGHT JOIN estudiante ON estudiante.idestudiante = inscripcion.idestudiante
+WHERE inscripcion.idinscripcion IS NULL;
 ```
 
 ### 2.4 — Materias que nadie eligió *(→ 9 filas)*
 Mostrá el **nombre y código** de las materias sin ningún inscripto.
 
 ```sql
+SELECT materia.nombre, materia.codigo, materia.idmateria
+FROM materia left join inscripcion on materia.idmateria = inscripcion.idmateria
+where inscripcion.idinscripcion is null
+
 
 ```
 
@@ -145,7 +172,12 @@ Mostrá **nombre del estudiante** y **nombre de la materia**, solo de las materi
 docente de apellido **López**.
 
 ```sql
-
+select estudiante.nombre as estudiante, materia.nombre as materia
+from inscripcion
+inner join estudiante on inscripcion.idestudiante = estudiante.idestudiante
+inner join materia on inscripcion.idmateria = materia.idmateria
+inner join docente on materia.docente_id = docente.iddocente
+where docente.apellido = "López"
 ```
 
 ### 3.4 — Programación *(→ 18 filas)*
