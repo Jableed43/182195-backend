@@ -23,25 +23,32 @@ La tabla `mascota` tiene una columna `apellido`, que **pretende** decir de quié
 `idduenio` del dueño cuyo apellido coincida. Usá `LEFT JOIN`.
 
 ```sql
-
+SELECT m.idmascota,
+       m.nombre   AS mascota,
+       m.apellido AS apellido_cargado,
+       d.idduenio,
+       d.nombre   AS duenio_nombre,
+       d.apellido AS duenio_apellido
+FROM mascota m
+LEFT JOIN duenio d ON m.apellido = d.apellido
 ```
 
-**1.2** ¿Cuántas mascotas quedaron con el dueño en `NULL`?  → `____ de 4`
+**1.2** ¿Cuántas mascotas quedaron con el dueño en `NULL`?  → `3 de 4`
 
 **1.3** ¿Por qué pasó esto? ¿Alguien cargó mal los datos?
 
-`_______________________________________________________________`
+`No habian relaciones establecidas entre las dos tablas y se perdieron datos de referencia al borrar usuario`
 
-`_______________________________________________________________`
 
 **1.4** ⚠️ Escribí un `INSERT` que agregue una mascota con `apellido = 'zzzzz'`.
 ¿La base te deja? ¿Debería?
 
 ```sql
-
+insert into mascota (nombre,apellido, especie, fecha_nacimiento)
+values ('prueba', 'zzzz', 'otro', '2020-01-01')
 ```
 
-`_______________________________________________________________`
+`Nada lo restringe, ademas apellido no es una key, por lo tanto no habria problema`
 
 ---
 
@@ -55,7 +62,7 @@ La tabla `mascota` tiene una columna `apellido`, que **pretende** decir de quié
 > Si la declarás `NOT NULL` sin `DEFAULT`, el `ALTER` falla.
 
 ```sql
-
+    alter table mascota add column id_duenio int null;
 ```
 
 **2.2** Verificá con `DESCRIBE`.
