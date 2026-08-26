@@ -1,0 +1,62 @@
+erDiagram
+    PROFESIONAL {
+        int idProfesional PK
+        string nombre
+        string apellido
+        int matricula
+        string clave
+        string email
+    }
+
+    AGENDA {
+        int idAgenda PK
+        int idProfesional FK
+        datetime horaInicio
+        datetime horaFin
+        boolean disponible
+    }
+
+    CITA {
+        int idCita PK
+        int idAgenda FK
+        int idPaciente FK
+        string estado "Enum: pendiente, confirmada, cancelada, atendida"
+    }
+
+    PACIENTE {
+        int idPaciente PK
+        string nombre
+        string apellido
+        int edad
+        string ocupacion
+        string email
+        string consulta
+        string alergias
+        string medicacion
+        string anotaciones
+        double peso
+        double talla
+        double pectoral
+        double tricep
+        double abdomen
+        double muslo
+    }
+
+    PLAN {
+        int idPlan PK
+        int idPaciente FK
+        string sugerencias
+    }
+
+    DETALLE_PLAN {
+        int idDetallePlan PK
+        int idPlan FK
+        string dia "Enum: Lunes...Domingo"
+        string indicaciones
+    }
+
+    PROFESIONAL ||--o{ AGENDA : posee
+    AGENDA ||--o{ CITA : "ocupa un espacio en"
+    PACIENTE ||--o{ CITA : agenda
+    PACIENTE ||--|| PLAN : tiene
+    PLAN ||--o{ DETALLE_PLAN : contiene

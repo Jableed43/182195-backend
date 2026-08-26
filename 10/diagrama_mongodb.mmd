@@ -1,0 +1,77 @@
+classDiagram
+    class Profesional {
+        +ObjectId _id
+        +String nombre
+        +String apellido
+        +int matricula
+        +String clave
+        +String email
+        +iniciarSesion(nombre, clave)
+        +registro(nombre, apellido, email, matricula, clave)
+        +cerrarSesion()
+    }
+
+    class Agenda {
+        +ObjectId _id
+        +ObjectId idProfesional
+        +DateTime horaInicio
+        +DateTime horaFin
+        +Boolean disponible
+        +nuevoBloque(horaInicio, horaFin)
+        +verDisponibilidad()
+    }
+
+    class Cita {
+        +ObjectId _id
+        +ObjectId idAgenda
+        +ObjectId idPaciente
+        +String estado
+        +nuevaCita(idAgenda, idPaciente)
+        +verCitas()
+    }
+
+    note for Cita "estado: Enum(pendiente, confirmada,\ncancelada, atendida)"
+
+    class Paciente {
+        +ObjectId _id
+        +String nombre
+        +String apellido
+        +int edad
+        +String ocupacion
+        +String email
+        +String consulta
+        +String alergias
+        +String medicacion
+        +String anotaciones
+        +double peso
+        +double talla
+        +double pectoral
+        +double tricep
+        +double abdomen
+        +double muslo
+        +nuevoPaciente()
+        +verPaciente()
+    }
+
+    class Plan {
+        +ObjectId _id
+        +ObjectId idPaciente
+        +String sugerencias
+        +DetallePlan[] detalles
+        +nuevoPlan()
+        +verPlan()
+    }
+
+    class DetallePlan {
+        <<embedded>>
+        +String dia
+        +String indicaciones
+    }
+
+    note for DetallePlan "dia: Enum(Lunes, Martes, Miercoles,\nJueves, Viernes, Sabado, Domingo)"
+
+    Profesional "1" --> "N" Agenda : posee
+    Agenda "1" --> "N" Cita : ocupa un espacio en
+    Paciente "1" --> "N" Cita : agenda
+    Paciente "1" --> "1" Plan : tiene
+    Plan "1" *-- "N" DetallePlan : embebe
