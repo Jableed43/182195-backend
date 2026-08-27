@@ -1,0 +1,92 @@
+erDiagram
+    CARGO {
+        int idCargo PK
+        string Nombre
+        string Descripcion
+    }
+
+    EMPLEADO {
+        int idEmpleado PK
+        string Nombre
+        string Apellido_Paterno
+        string Apellido_Materno
+        int Sueldo
+        string Turno
+        int idCargo FK
+    }
+
+    CLIENTE {
+        int idCliente PK
+        string Nombre
+        string Apellido_Paterno
+        string Apellido_Materno
+        string RazonSocial
+        string Direccion
+        string Telefono
+    }
+
+    VENTA {
+        int idVenta PK
+        datetime FechaHora
+        double MontoTotal
+        int idCliente FK
+        int idEmpleado FK
+    }
+
+    PRODUCTO {
+        int idProducto PK
+        string Nombre
+        double PrecioCompra
+        double PrecioVenta
+        double Stock
+    }
+
+    DETALLE_VENTA {
+        int idVenta PK, FK
+        int idProducto PK, FK
+        int Cantidad
+        double PrecioUnitario
+        double Descuento
+    }
+
+    EMPRESA {
+        int idEmpresa PK
+        string Nombre
+        string Ubicacion
+        string Telefono
+    }
+
+    CONTACTO {
+        int idContacto PK
+        string Nombre
+        string Apellido
+        string Telefono
+        int idEmpresa FK
+    }
+
+    COMPRA {
+        int idCompra PK
+        datetime FechaHora
+        double MontoTotal
+        string TipoPago
+        int idEmpresa FK
+        int idEmpleado FK
+    }
+
+    DETALLE_COMPRA {
+        int idCompra PK, FK
+        int idProducto PK, FK
+        int Cantidad
+        double PrecioUnitario
+    }
+
+    CARGO ||--o{ EMPLEADO : "pertenece_a"
+    CLIENTE ||--o{ VENTA : "realiza"
+    EMPLEADO ||--o{ VENTA : "atiende"
+    VENTA ||--o{ DETALLE_VENTA : "contiene"
+    PRODUCTO ||--o{ DETALLE_VENTA : "incluido_en"
+    EMPRESA ||--o{ CONTACTO : "tiene"
+    EMPRESA ||--o{ COMPRA : "provee"
+    EMPLEADO ||--o{ COMPRA : "registra"
+    COMPRA ||--o{ DETALLE_COMPRA : "contiene"
+    PRODUCTO ||--o{ DETALLE_COMPRA : "incluido_en"
