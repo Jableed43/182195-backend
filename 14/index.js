@@ -1,7 +1,9 @@
+// Entry point
 import express from 'express'
 
 // express() devuelve un objeto, ese objeto es nuestro servidor
 // todo lo que le pidamos al servidor se lo pedimos a app
+// SIEMPRE VA PRIMERO
 const app = express()
 
 // Definir una ruta
@@ -66,6 +68,7 @@ app.use((req, res) => {
 
 const PORT = 3000;
 
+// SIEMPRE VA ULTIMO
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`)
 })
