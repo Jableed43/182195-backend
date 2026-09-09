@@ -37,7 +37,7 @@ const libroSchema = new mongoose.Schema({
     },
     creado: {
         type: Date,
-        default: Data.now // sin parentesis
+        default: Date.now // sin parentesis
         // Data.now se ejecuta cuando se crea el documento
         // si pones Data.now() -> todos los libros van a quedar con la hora de arranque del sistema
     }

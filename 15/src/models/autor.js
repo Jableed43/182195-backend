@@ -17,11 +17,7 @@ const autorSchema = new mongoose.Schema({
 
     nacionalidad: {
         type: String,
-        // '{VALUE}' es el dato que recibe desde el cliente
-        enum: [
-        ["argentina", "uruguaya", "chilena"],
-        "La nacionalidad '{VALUE}' no es válida."
-    ],
+        enum: ["argentina", "uruguaya", "chilena"],
         default: "argentina",
         lowercase: true
     },
