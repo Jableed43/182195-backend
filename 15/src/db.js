@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
-
-const MONGO_URI = "mongodb://localhost:27017/biblioteca"
+import { MONGO_URI } from '../utils/config.js'
 
 export const conectarDB = async () => {
     try {
