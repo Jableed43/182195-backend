@@ -25,7 +25,7 @@ export const crearLibroController = async (req, res) => {
 export const actualizarLibroController = async (req, res) => {
     const libro = await actualizarLibroService(req.params.id, req.body)
     if(!libro){
-        return res.status(400).json({ error: "No existe ese libro"})
+        return res.status(404).json({ error: "No existe ese libro"})
     }
     res.status(200).json(libro)
 }
@@ -33,7 +33,7 @@ export const actualizarLibroController = async (req, res) => {
 export const eliminarLibroController = async (req, res) => {
     const libro = await eliminarLibroService(req.params.id)
     if(!libro){
-        return res.status(400).json({error: "No existe ese libro"})
+        return res.status(404).json({error: "No existe ese libro"})
     }
     // It is used to quickly end the response without any data
     // res.status(204).end()

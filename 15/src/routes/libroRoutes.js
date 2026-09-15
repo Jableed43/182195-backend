@@ -8,13 +8,13 @@ const router = Router()
 // get libros
 router.get("/", libroController.listarLibroController)
 
-// get by id , :id es path param
+// get by id , :id es path param - req.param
 router.get("/:id", libroController.obtenerLibroIdController)
 
 // crear libro
 router.post("/", libroController.crearLibroController)
 
-router.patch(  "/:id", libroController.actualizarLibroController);
-router.delete( "/:id", libroController.eliminarLibroController);
+router.patch("/:id", libroController.actualizarLibroController);
+router.delete("/:id", libroController.eliminarLibroController);
 
 export default router

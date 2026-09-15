@@ -44,7 +44,7 @@ export const crearLibroService = async (datos) => {
         if(error.code === 11000){
             throw new Error(`El ISBN ${datos.isbn} ya está cargado en otro libro`)
         }  else {
-            console.error(error.message)
+            throw error
         }
     }
 }
@@ -55,16 +55,16 @@ export const actualizarLibroService = async (id, datos) => {
 
     try {
         return await Libro.findByIdAndUpdate(
-            id,
+            {_id: id},
             datos,
             { returnDocument: "after", runvalidators: true}
         )
-        . populate("autor", "nombre nacionalidad")
+        .populate("autor", "nombre nacionalidad")
     } catch (error) {
         if(error.code === 11000){
-            throw new Error(`El ISBN ${datos.isbn} ya está cargado en otro libro`)
+            throw new Error(`El ISBN ${datos.isbn} ya está cargado en otro libro`, 409)
         } else {
-            console.error(error.message)
+            throw error
         }
     }
 }
