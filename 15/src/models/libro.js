@@ -40,6 +40,22 @@ const libroSchema = new mongoose.Schema({
         default: Date.now // sin parentesis
         // Data.now se ejecuta cuando se crea el documento
         // si pones Data.now() -> todos los libros van a quedar con la hora de arranque del sistema
+    },
+    stock: {
+        type: Number,
+        default: 0,
+        required: [true, "El stock es obligatorio"],
+        min: [0, "El stock no puede ser negativo"],
+        // validacion custom
+        validate: {
+            validator: Number.isInteger,
+            message: "El stock tiene que ser un numero entero"
+        }
+    },
+    precio: {
+        type: Number,
+        required: [true, "El precio es obligatorio"],
+        min: [0, "El precio no puede ser negativo"]
     }
 })
 

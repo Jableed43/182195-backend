@@ -4,6 +4,7 @@ import libroRoutes from "./routes/libroRoutes.js"
 import autorRoutes from "./routes/autorRoutes.js"
 import { PORT } from './utils/config.js';
 import { manejarErrores } from './middleware/manejarErrores.js';
+import usuarioRoutes from "./routes/usuarioRoutes.js"
 
 await conectarDB()
 
@@ -15,6 +16,7 @@ app.use(express.json())
 // todas mis rutas de libro van a empezar con sujo "/api/libros"
 app.use("/api/libros", libroRoutes)
 app.use("/api/autores", autorRoutes)
+app.use("/api/usuarios", usuarioRoutes)
 
 // Caso 404 en caso que la direccion no exista
 app.use((req, res) => {

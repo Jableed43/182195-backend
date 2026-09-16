@@ -1,5 +1,6 @@
 import Autor from "../models/autor.js";
 import Libro from "../models/libro.js";
+import { ErrorApp } from "../utils/ErrorApp.js";
 
 // el servicio tiene la responsabilidad de hacer el llamado a los datos, procesarlos, operarlos, combinarlos. Todo tratamiento a los datos se hace desde acá y muchas veces dependemos de llamados a la base de datos
 
@@ -42,7 +43,7 @@ export const crearLibroService = async (datos) => {
     } catch (error) {
         // error.code 11000 es un error de duplicado
         if(error.code === 11000){
-            throw new Error(`El ISBN ${datos.isbn} ya está cargado en otro libro`)
+            throw new ErrorApp(`El ISBN ${datos.isbn} ya está cargado en otro libro`, 409)
         }  else {
             throw error
         }
@@ -62,7 +63,7 @@ export const actualizarLibroService = async (id, datos) => {
         .populate("autor", "nombre nacionalidad")
     } catch (error) {
         if(error.code === 11000){
-            throw new Error(`El ISBN ${datos.isbn} ya está cargado en otro libro`, 409)
+            throw new ErrorApp(`El ISBN ${datos.isbn} ya está cargado en otro libro`, 409)
         } else {
             throw error
         }
