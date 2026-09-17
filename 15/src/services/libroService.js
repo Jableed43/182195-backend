@@ -58,7 +58,9 @@ export const actualizarLibroService = async (id, datos) => {
         return await Libro.findByIdAndUpdate(
             {_id: id},
             datos,
-            { returnDocument: "after", runvalidators: true}
+            // ojo: runValidators con V mayuscula. Si va en minuscula la opcion no existe,
+            // mongoose la ignora en silencio y el PATCH no valida nada.
+            { returnDocument: "after", runValidators: true}
         )
         .populate("autor", "nombre nacionalidad")
     } catch (error) {
