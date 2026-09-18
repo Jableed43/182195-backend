@@ -7,3 +7,4 @@ pero en los productos se repiten los ids/isbn
 que pasa si hay reclamo por rotura o devolucion como se constata que ese producto es unico?
 
 Armar un frontend (adaptar el front mismo de la comisión de front)
+

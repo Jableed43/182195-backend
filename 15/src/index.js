@@ -5,6 +5,7 @@ import autorRoutes from "./routes/autorRoutes.js"
 import { PORT } from './utils/config.js';
 import { manejarErrores } from './middleware/manejarErrores.js';
 import usuarioRoutes from "./routes/usuarioRoutes.js"
+import carritoRoutes from "./routes/carritoRoutes.js"
 
 await conectarDB()
 
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use("/api/libros", libroRoutes)
 app.use("/api/autores", autorRoutes)
 app.use("/api/usuarios", usuarioRoutes)
+app.use("/api/carrito", carritoRoutes)
 
 // Caso 404 en caso que la direccion no exista
 app.use((req, res) => {
