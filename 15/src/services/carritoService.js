@@ -62,7 +62,7 @@ const conTotal = (carrito) => {
         items,
         unidades: items.reduce(( acc, item ) => acc + item.cantidad, 0),
         total: items.reduce((acc, item) => acc + item.subtotal, 0),
-        actualizado: carrito.updateAt
+        actualizado: carrito.updatedAt // paso 0: decía updateAt
     }
 }
 
@@ -94,7 +94,7 @@ const validarCantidad = (cantidad) => {
  */
 const validarIdLibro = (libroId) => {
     if(!mongoose.isValidObjectId(libroId)){
-        throw new ErrorApp("Ese is de libro no tiene un formato valido", 400)
+        throw new ErrorApp("Ese id de libro no tiene un formato valido", 400)
     }
 }
 
@@ -115,7 +115,8 @@ const validarIdLibro = (libroId) => {
 
 // Persistencia: Guarda las modificaciones con carrito.save() y retorna el carrito procesado y formateado.
 // POST
-export const agregarItemService = async (usuarioId, { libro: libroId, cantidad = 1 }) => {
+// paso 0: el "= {}" evita un 500 si el POST llega sin body (en Express 5, req.body queda undefined)
+export const agregarItemService = async (usuarioId, { libro: libroId, cantidad = 1 } = {}) => {
     const carrito = await obtenerOCrear(usuarioId)
 
     if(!libroId)  throw new ErrorApp("Falta el libro", 400)
@@ -130,7 +131,7 @@ export const agregarItemService = async (usuarioId, { libro: libroId, cantidad =
     }
 
     if(!libro.disponible){
-        throw new ErrorApp(`"${libro.titulo}" no está disponible para la venta`)
+        throw new ErrorApp(`"${libro.titulo}" no está disponible para la venta`, 409) // paso 0: faltaba el 409
     }
 
     // si está en el carrito se suma
@@ -140,7 +141,8 @@ export const agregarItemService = async (usuarioId, { libro: libroId, cantidad =
 
     if(cantidadFinal > libro.stock){
         throw new ErrorApp(
-            `Stock insuficiente de "${libro.titulo}": hay ${libro.stock} y en el carrito quedarían ${cantidadFinal}, 409`
+            `Stock insuficiente de "${libro.titulo}": hay ${libro.stock} y en el carrito quedarían ${cantidadFinal}`,
+            409 // paso 0: estaba ADENTRO del string
         )
     }
 
@@ -174,9 +176,11 @@ export const actualizarItemService = async (usuarioId, libroId, { cantidad } = {
         throw new ErrorApp("Ese libro no está en el carrito", 404)
     }
 
-    const libro = Libro.findById(libroId)
+    // paso 0: faltaba el await. Sin él, libro es una consulta SIN ejecutar,
+    // libro.stock da undefined y el control de stock nunca se cumplía.
+    const libro = await Libro.findById(libroId)
     if(cantidad > libro.stock){
-        throw new ErrorApp(`Stock insuficiente de "${libro.titulo}": hay ${libro.stock}, 409 `)
+        throw new ErrorApp(`Stock insuficiente de "${libro.titulo}": hay ${libro.stock}`, 409) // paso 0
     }
 
     item.cantidad = cantidad // se fija la cantidad no se suma

@@ -1,6 +1,15 @@
 import mongoose from "mongoose"
+import bcrypt from "bcrypt"
 
-// posible GAP (brecha) a futuro, añadir roles
+// ROLES
+// comprador -> arma su carrito y compra (es el rol por defecto)
+// vendedor  -> administra el catalogo: libros y autores
+// admin     -> todo lo anterior + administra usuarios
+export const ROLES = ["comprador", "vendedor", "admin"]
+
+// cuantas "vueltas" da bcrypt al hashear. Mas vueltas = mas lento de crackear
+// y tambien mas lento de calcular. 10 es el estandar (~100ms por hash)
+const VUELTAS = 10
 
 // ESTA ES UNA VERDADERA CONSTANTE
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -38,7 +47,51 @@ const usuarioSchema = new mongoose.Schema({
         lowercase: true,
         // regex
         match: [emailRegex, "Ese email no tiene forma de email"]
+    },
+    password: {
+        type: String,
+        required: [true, "La contraseña es obligatoria"],
+        minLength: [6, "La contraseña necesita al menos 6 caracteres"],
+        // select: false -> NUNCA viene en un find(). Hay que pedirla a proposito
+        // con .select("+password"). Asi es imposible mandarla en un JSON sin querer
+        select: false
+    },
+    rol: {
+        type: String,
+        enum: ROLES,
+        default: "comprador"
     }
-}, {timestamps: true})
+}, {
+    timestamps: true,
+    // select: false solo aplica a las CONSULTAS (find, findById...).
+    // Pero create() y save() devuelven el documento que acaban de guardar, CON
+    // el hash adentro. Este transform lo borra cada vez que un usuario se
+    // convierte a JSON, que es lo que hace res.json(). Doble candado.
+    toJSON: {
+        transform: (doc, ret) => {
+            delete ret.password
+            return ret
+        }
+    }
+})
+
+// PRE-SAVE HOOK: corre ANTES de cada save() (y de cada create(), que usa save)
+// Aca se hashea la contraseña. Va en el modelo y no en el service para que sea
+// IMPOSIBLE guardar una contraseña en texto plano, la guarde quien la guarde.
+// ⚠️ function y no flecha: necesitamos el "this", que es el documento que se guarda
+usuarioSchema.pre("save", async function () {
+    // si no cambio la password (ej: solo cambio el nombre) no se toca:
+    // re-hashear un hash lo romperia y el usuario no podria volver a entrar
+    if (!this.isModified("password")) return
+
+    this.password = await bcrypt.hash(this.password, VUELTAS)
+})
+
+// metodo de instancia: usuario.compararPassword("loQueMandaron")
+// bcrypt.compare hashea lo que llego y lo compara con lo guardado.
+// Un hash NUNCA se "deshashea": es de una sola direccion
+usuarioSchema.methods.compararPassword = function (password) {
+    return bcrypt.compare(password, this.password)
+}
 
 export default mongoose.model("Usuario", usuarioSchema)

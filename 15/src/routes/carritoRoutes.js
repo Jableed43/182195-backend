@@ -1,8 +1,9 @@
 import { Router } from "express"
 import * as carritoController from "../controllers/carritoController.js"
 
-// si este router ve el :usuarioId del prefijo
-// sin esto req.params.usuarioId llega undefined sin ningun error 
+// paso 0: acá NO hace falta mergeParams: el :usuarioId está escrito en cada ruta de
+// este router, no en el prefijo del app.use. mergeParams solo se necesita cuando
+// el parámetro viene del padre, ej: router.use("/:usuarioId/carrito", carritoRoutes)
 const router = Router()
 
 // si el user está loggeado, ya lo tenemos guardado en el sistema, no haria falta que lo manden por ruta

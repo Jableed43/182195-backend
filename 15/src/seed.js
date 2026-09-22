@@ -51,10 +51,18 @@ await Libro.create([
 ]);
 
 // el modelo pide apellido: sin el, tambien corta
+// ═══ paso 1 ═══
+// ⭐ El seed es el ÚNICO lugar donde se crean vendedores y admins:
+//    el registro público siempre crea compradores.
+// ⭐ Tiene que ser create() y NO insertMany(): insertMany se saltea el
+//    pre-save hook y las contraseñas quedarían guardadas en texto plano.
 await Usuario.create([
-    { nombre: "Ana",   apellido: "Gómez", email: "ana.gomez@mail.com"  },
-    { nombre: "Bruno", apellido: "Díaz",  email: "bruno.diaz@mail.com" }
+    { nombre: "Ana",   apellido: "Gómez",   email: "ana.gomez@mail.com",   password: "ana12345",   rol: "comprador" },
+    { nombre: "Bruno", apellido: "Díaz",    email: "bruno.diaz@mail.com",  password: "bruno1234",  rol: "comprador" },
+    { nombre: "Carla", apellido: "Ruiz",    email: "carla.ruiz@mail.com",  password: "carla1234",  rol: "vendedor"  },
+    { nombre: "Admin", apellido: "Sistema", email: "admin@mail.com",       password: "admin1234",  rol: "admin"     }
 ]);
+// ═══ fin paso 1 ═══
 
 console.log(`🌱 ${await Autor.countDocuments()} autores y ${await Libro.countDocuments()} libros`);
 console.log("   genero     : novela 4 · cuento 2");
@@ -62,5 +70,8 @@ console.log("   disponible : true 4 · false 2");
 console.log("   autor      : Borges 2 · el resto 1 cada uno");
 console.log("   stock      : 10 · 5 · 3 · 4 · 1 · 0");
 console.log(`   usuarios   : ${await Usuario.countDocuments()}`);
+console.log("   logins     : ana.gomez@mail.com / ana12345   (comprador)"); // paso 1
+console.log("                carla.ruiz@mail.com / carla1234 (vendedor)"); // paso 1
+console.log("                admin@mail.com / admin1234      (admin)"); // paso 1
 
 await mongoose.connection.close();

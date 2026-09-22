@@ -7,6 +7,6 @@ router.get("/", usuarioController.listarUsuarioController)
 router.get("/:id", usuarioController.obtenerUsuarioIdController)
 router.post("/", usuarioController.crearUsuarioController)
 
-// GAP: faltan rutas de carrito y rutas de pedidos
+// paso 0: el carrito ya está en /api/carrito. Pendiente: pedidos (clase aparte, con pagos).
 
 export default router

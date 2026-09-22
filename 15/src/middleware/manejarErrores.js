@@ -28,7 +28,7 @@
 //  ⚠️ ENTONCES, ¿CUÁNDO SÍ VA UN try/catch?
 //     Solo si vas a HACER algo con el error:
 //       · traducirlo a un mensaje mejor  -> ver el ISBN en libroService.js
-//       · deshacer algo a medio hacer    -> ver el stock en pedidoService.js
+//       · deshacer algo a medio hacer    -> lo vamos a ver en pedidos (devolver stock)
 //     Y siempre termina en throw.
 //
 //  ⚠️ UN catch QUE SOLO HACE console.error NO ATRAPA EL ERROR: LO ESCONDE.

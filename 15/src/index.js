@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from "cors" // cors
 import { conectarDB } from "./db.js";
 import libroRoutes from "./routes/libroRoutes.js"
 import autorRoutes from "./routes/autorRoutes.js"
@@ -10,6 +11,13 @@ import carritoRoutes from "./routes/carritoRoutes.js"
 await conectarDB()
 
 const app = express()
+
+// CORS: el navegador bloquea que una página de OTRO origen
+// (ej: un front en localhost:5173) le pida datos a esta API (localhost:3000).
+// cors() agrega los headers que le dicen al navegador "dejalo pasar".
+// ⚠️ Postman no es un navegador: ahí anda con o sin CORS. Por eso no se nota hasta tener un front.
+app.use(cors())
+
 // express.json lee las consultas que recibimos en json y las puede utilizar
 app.use(express.json())
 
