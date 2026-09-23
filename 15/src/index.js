@@ -7,6 +7,7 @@ import { PORT } from './utils/config.js';
 import { manejarErrores } from './middleware/manejarErrores.js';
 import usuarioRoutes from "./routes/usuarioRoutes.js"
 import carritoRoutes from "./routes/carritoRoutes.js"
+import authRoutes from "./routes/authRoutes.js"
 
 await conectarDB()
 
@@ -22,6 +23,10 @@ app.use(cors())
 app.use(express.json())
 
 // Agrupadores de rutas
+
+// rutas de autenticacion
+app.use("/api/auth", authRoutes)
+
 // todas mis rutas de libro van a empezar con sujo "/api/libros"
 app.use("/api/libros", libroRoutes)
 app.use("/api/autores", autorRoutes)

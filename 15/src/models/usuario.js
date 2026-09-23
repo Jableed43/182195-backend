@@ -54,6 +54,7 @@ const usuarioSchema = new mongoose.Schema({
         minLength: [6, "La contraseña necesita al menos 6 caracteres"],
         // select: false -> NUNCA viene en un find(). Hay que pedirla a proposito
         // con .select("+password"). Asi es imposible mandarla en un JSON sin querer
+        // si pedis el usuario no te envia la contraseña
         select: false
     },
     rol: {

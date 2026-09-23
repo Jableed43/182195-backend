@@ -25,3 +25,20 @@ export const verificarUsuarioService = async (usuarioId) => {
     throw new ErrorApp(`No existe ningun usuario con el id ${usuarioId}`, 404)
    }
 }
+
+// buscar el usuario por email con password
+// busca por email y trae la contraseña
+// es el unico lugar donde se pide la contraseña
+export const buscarPorEmailConPasswordService = async (email = "") => {
+    // .select("+password") mitiga el select:false del modelo de usuario
+    return await Usuario.findOne({ email: email.toLowerCase().trim() }).select("+password")
+}
+
+// datos publicos, no retorna contraseña
+export const datosPublicosUsuario = (usuario) => ({
+    _id: usuario._id,
+    nombre: usuario.nombre,
+    apellido: usuario.apellido,
+    email: usuario.email,
+    rol: usuario.rol
+})
