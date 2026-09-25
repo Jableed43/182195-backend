@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
-import { API_URL } from "../../config"
+import { RUTAS } from "../../config"
+import { api } from "../../utils/api"
+import { usuarioAUser } from "../../utils/adaptadores"
 
-// Descarga la colección completa de usuarios (GET /user) y la guarda en estado.
-// Excluye a los usuarios con Soft Delete (deletedAt): no deben mostrarse.
-// El filtrado/búsqueda por nombre o email se hace en memoria del cliente (en la página).
+// GET /api/usuarios  ·  PROTEGIDA: token + rol admin (el back responde 403 a los demás)
+// El back nunca manda la password: el modelo la tiene en select: false y
+// además la borra en toJSON. Por eso acá ya no hace falta filtrarla.
 function useGetUsers() {
     const [users, setUsers] = useState([])
     const [error, setError] = useState(null)
@@ -14,20 +16,10 @@ function useGetUsers() {
             setLoading(true)
             setError(null)
 
-            const response = await fetch(`${API_URL}user`)
+            const data = await api("GET", RUTAS.usuarios, { porDefecto: "Error al traer los usuarios" })
 
-            if (!response.ok) {
-                throw new Error(`Error al traer los usuarios, ${response.status}`)
-            }
-
-            const data = await response.json()
-
-            // Solo usuarios activos (sin deletedAt) y sin exponer la password
-            const activos = data
-                .filter((user) => !user.deletedAt)
-                .map(({ password: _, ...rest }) => rest)
-
-            setUsers(activos)
+            // usuarios del back (nombre, apellido, rol) -> users del front (name, lastName, role)
+            setUsers(data.map((usuario) => usuarioAUser(usuario)))
         } catch (error) {
             console.error(error)
             setError(error)
@@ -41,7 +33,7 @@ function useGetUsers() {
         getUsers()
     }, [])
 
-    // refetch permite recargar el listado tras un borrado
+    // refetch permite recargar el listado sin recargar la página
     return { users, error, loading, refetch: getUsers }
 }
 

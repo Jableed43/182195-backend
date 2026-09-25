@@ -26,9 +26,10 @@ export const router = createBrowserRouter([
                 element: <Products/>
             },
             {
+                // el catalogo lo maneja el staff: vendedor y admin
                 path: "/products/create",
                 element: (
-                    <ProtectedRoute requireAdmin>
+                    <ProtectedRoute roles={["vendedor", "admin"]}>
                         <CreateProductPage />
                     </ProtectedRoute>
                 )
@@ -37,23 +38,25 @@ export const router = createBrowserRouter([
                 // El :id es la "creacion" del path param
                 path: "/products/edit/:id",
                 element: (
-                    <ProtectedRoute requireAdmin>
+                    <ProtectedRoute roles={["vendedor", "admin"]}>
                         <EditProductPage />
                     </ProtectedRoute>
                 )
             },
             {
+                // los usuarios son solo del admin
                 path: "/admin/users",
                 element: (
-                    <ProtectedRoute requireAdmin>
+                    <ProtectedRoute roles={["admin"]}>
                         <AdminPanelPage />
                     </ProtectedRoute>
                 )
             },
             {
+                // el carrito es del comprador: en el back, /api/carrito pide ese rol
                 path: "/cart",
                 element: (
-                    <ProtectedRoute>
+                    <ProtectedRoute roles={["comprador"]}>
                         <CartPage />
                     </ProtectedRoute>
                 )

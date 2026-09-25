@@ -2,6 +2,15 @@ import Swal from "sweetalert2"
 
 // Helpers centralizados de notificación (SweetAlert2) para mantener un estilo
 // consistente en toda la app: éxito, error, confirmación y toast rápido.
+//
+// CRITERIO (cuándo usar cada uno):
+//   notifyToast   -> salió bien y la app sigue andando (login, guardar, agregar).
+//                    No corta el flujo: aparece en una esquina y se va solo.
+//   notifyError   -> algo falló y hay que leerlo. Corta, a propósito.
+//   confirmAction -> antes de algo destructivo (borrar, vaciar). Pide sí o no.
+//   notifySuccess -> éxito que MERECE cortar (casi nunca). Ojo: como devuelve
+//                    una promesa, si le ponés await frena la redirección hasta
+//                    que el usuario hace clic en OK. Eso molesta más de lo que suma.
 
 export const notifySuccess = (title, text = "") =>
     Swal.fire({ icon: "success", title, text, confirmButtonColor: "#567cbd" })

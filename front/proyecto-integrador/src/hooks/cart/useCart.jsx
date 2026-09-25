@@ -1,50 +1,80 @@
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { RUTAS } from "../../config"
+import { api } from "../../utils/api"
+import { carritoAVista } from "../../utils/adaptadores"
+import useAuth from "../user/useAuth"
 
-// Lógica del carrito en el cliente. Persiste en sessionStorage con la
-// estructura acordada: [{ productId: Number, quantity: Number }].
-// sessionStorage es la fuente de verdad: cada operación lee el estado actual
-// desde ahí antes de mutar, para evitar datos obsoletos entre instancias.
-const CART_KEY = "carrito"
-
-function readCart() {
-    try {
-        return JSON.parse(sessionStorage.getItem(CART_KEY)) || []
-    } catch {
-        return []
-    }
-}
-
+// El carrito ahora vive en el BACK, no en sessionStorage.
+// Ventajas: sobrevive al cierre del navegador, es el mismo en cualquier
+// dispositivo, y el stock se valida en el servidor (nadie puede cargar 999
+// unidades tocando el sessionStorage desde la consola del navegador).
+//
+// Todas las rutas son /api/carrito y piden token: el back saca el usuario
+// del token, por eso la URL ya no lleva ningún :usuarioId.
 function useCart() {
-    const [items, setItems] = useState(readCart)
+    const [cart, setCart] = useState({ items: [], unidades: 0, total: 0 })
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
 
-    const persist = (next) => {
-        sessionStorage.setItem(CART_KEY, JSON.stringify(next))
-        setItems(next)
+    // Solo el comprador tiene carrito: el back responde 403 a un vendedor o
+    // a un admin, y 401 a quien no esté logueado. Sin este freno, el listado
+    // de productos dispararía un error cada vez que lo abre un invitado.
+    const { isComprador, user } = useAuth()
+
+    // Devuelve { ok, error } en vez de un booleano: el error viaja en la misma
+    // llamada. Si quien llama leyera el estado `error`, se encontraría con el
+    // valor del render anterior, porque setError no actualiza al instante.
+    const pedir = useCallback(async (metodo, ruta = "", body) => {
+        if (!isComprador) return { ok: false, error: new Error("Solo un comprador tiene carrito") }
+
+        try {
+            setError(null)
+            setLoading(true)
+            const carrito = await api(metodo, `${RUTAS.carrito}${ruta}/${user.id}`, { body })
+            setCart(carritoAVista(carrito))
+            return { ok: true }
+        } catch (error) {
+            console.error(error)
+            setError(error)
+            return { ok: false, error }
+        } finally {
+            setLoading(false)
+        }
+    }, [isComprador])
+
+    // al entrar, se trae el carrito guardado (si el usuario no tenía, el back lo crea)
+    const refetch = useCallback(() => pedir("GET"), [pedir])
+    useEffect(() => { refetch() }, [refetch])
+
+    // POST suma a lo que ya había · PATCH fija la cantidad
+    const addToCart = (libroId, cantidad = 1) => pedir("POST", "", { libro: libroId, cantidad })
+    const setQuantity = (libroId, cantidad) => pedir("PATCH", `/${libroId}`, { cantidad })
+    const removeItem = (libroId) => pedir("DELETE", `/${libroId}`)
+    const clearCart = () => pedir("DELETE")
+
+    // el "+" y el "-" son casos particulares de fijar la cantidad
+    const increment = (libroId) => addToCart(libroId, 1)
+    const decrement = (libroId) => {
+        const item = cart.items.find((i) => i.product.id === libroId)
+        if (!item) return Promise.resolve({ ok: false })
+        // si queda en 0, se saca del carrito: el back exige cantidad >= 1
+        return item.quantity <= 1 ? removeItem(libroId) : setQuantity(libroId, item.quantity - 1)
     }
 
-    // Cambia la cantidad de un producto en `delta`. Si no existe y delta es
-    // positivo, lo agrega. Los items que quedan en 0 (o menos) se eliminan.
-    const changeQuantity = (productId, delta) => {
-        const current = readCart()
-        const base = current.some((i) => i.productId === productId)
-            ? current
-            : [...current, { productId, quantity: 0 }]
-        const next = base
-            .map((i) =>
-                i.productId === productId ? { ...i, quantity: i.quantity + delta } : i
-            )
-            .filter((i) => i.quantity > 0)
-        persist(next)
+    return {
+        items: cart.items,
+        unidades: cart.unidades,
+        total: cart.total,
+        loading,
+        error,
+        addToCart,
+        setQuantity,
+        increment,
+        decrement,
+        removeItem,
+        clearCart,
+        refetch,
     }
-
-    const addToCart = (productId) => changeQuantity(productId, 1)
-    const increment = (productId) => changeQuantity(productId, 1)
-    const decrement = (productId) => changeQuantity(productId, -1)
-    const removeItem = (productId) =>
-        persist(readCart().filter((i) => i.productId !== productId))
-    const clearCart = () => persist([])
-
-    return { items, addToCart, increment, decrement, removeItem, clearCart }
 }
 
 export default useCart

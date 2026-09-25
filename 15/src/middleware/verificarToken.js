@@ -20,7 +20,7 @@ export const verificarToken = (req, res, next) => {
         // revisamos si el token está firmado por nosotros y si no está vencido
         const payload = jwt.verify(token, JWT_SECRET)
 
-        // guarda el request los datos del usuario
+        // guarda el request los datos del usuario (este es el que obtenemos en el controller de carrito)
         req.usuario = { id: payload.id, rol: payload.rol }
 
         next()

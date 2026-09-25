@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useLoginUser from "../../hooks/user/useLoginUser";
 import useAuth from "../../hooks/user/useAuth";
-import { notifySuccess, notifyError } from "../../utils/notify";
+import { notifyToast, notifyError } from "../../utils/notify";
 
 function LoginUserPage() {
   const [form, setForm] = useState({
@@ -32,7 +32,8 @@ function LoginUserPage() {
                 email: "",
                 password: ""
             })
-            await notifySuccess("¡Bienvenido!", `Sesión iniciada como ${user.name}`)
+            // toast: avisa sin frenar la redirección
+            notifyToast(`¡Hola ${user.name}!`)
             navigate("/")
         } else {
             // el mensaje viene del back (ej: "Email o contraseña incorrectos")

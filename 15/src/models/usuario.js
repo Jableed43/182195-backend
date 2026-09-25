@@ -1,11 +1,11 @@
 import mongoose from "mongoose"
 import bcrypt from "bcrypt"
+import { ROLES } from "../utils/constants.js";
 
 // ROLES
 // comprador -> arma su carrito y compra (es el rol por defecto)
 // vendedor  -> administra el catalogo: libros y autores
 // admin     -> todo lo anterior + administra usuarios
-export const ROLES = ["comprador", "vendedor", "admin"]
 
 // cuantas "vueltas" da bcrypt al hashear. Mas vueltas = mas lento de crackear
 // y tambien mas lento de calcular. 10 es el estandar (~100ms por hash)
@@ -59,7 +59,7 @@ const usuarioSchema = new mongoose.Schema({
     },
     rol: {
         type: String,
-        enum: ROLES,
+        enum: Object.values(ROLES),
         default: "comprador"
     }
 }, {

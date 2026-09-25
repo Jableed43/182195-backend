@@ -7,13 +7,21 @@ import { notifyToast, notifyError, confirmAction } from "../utils/notify";
 function ProductCard({ products, onProductDeleted }) {
   const navigate = useNavigate()
   const {deleteProduct, error} = useDeleteProduct()
-  const { isAdmin, isAuthenticated } = useAuth()
+  // isStaff = vendedor o admin: los que pueden tocar el catálogo
+  // isComprador = el único que tiene carrito
+  const { isStaff, isComprador } = useAuth()
   const { addToCart } = useCart()
 
-  const handleAddToCart = (e, productId) => {
+  const handleAddToCart = async (e, productId) => {
     e.stopPropagation()
-    addToCart(productId)
-    notifyToast("Producto agregado al carrito")
+    const { ok, error } = await addToCart(productId)
+    if (ok) {
+      notifyToast("Producto agregado al carrito")
+    } else {
+      // el back rechaza si no hay stock (409) o si el libro no está disponible,
+      // y explica por qué: ese mensaje es el que se le muestra al usuario
+      notifyError("No se pudo agregar", error?.message || "Revisá el stock disponible")
+    }
   }
   
   const handleEditProduct = (e, productId) => {
@@ -29,6 +37,7 @@ function ProductCard({ products, onProductDeleted }) {
       "Sí, eliminar"
     )
     if(confirmed){
+     // el back, además de borrar el libro, lo saca de todos los carritos
      const response = await deleteProduct(productId)
      if(response){
       // Recargar solo el listado de productos (sin recargar toda la página)
@@ -83,15 +92,20 @@ function ProductCard({ products, onProductDeleted }) {
             )}
 
             <div className="mt-auto d-grid gap-2">
-              {/* Agregar al carrito: solo para usuarios autenticados */}
-              {isAuthenticated && (
-                <button className="btn btn-primary btn-sm" onClick={(e) => handleAddToCart(e, product.id)}>
-                  Agregar al carrito
+              {/* Agregar al carrito: solo el comprador tiene carrito.
+                  Si el libro no está disponible, el back lo rechaza con 409 */}
+              {isComprador && (
+                <button
+                  className="btn btn-primary btn-sm"
+                  disabled={!product.available || product.quantity < 1}
+                  onClick={(e) => handleAddToCart(e, product.id)}
+                >
+                  {product.available && product.quantity > 0 ? "Agregar al carrito" : "Sin stock"}
                 </button>
               )}
 
-              {/* Editar / Borrar solo visibles para administradores */}
-              {isAdmin && (
+              {/* Editar / Borrar: vendedor y admin */}
+              {isStaff && (
                 <div className="d-flex gap-2 justify-content-center">
                 <button className="btn btn-outline-secondary btn-sm" onClick={(e) => handleEditProduct(e, product.id)}> Editar </button>
                 <button className="btn btn-outline-danger btn-sm" onClick={(e) => handleDeleteProduct(e, product.id)} >Borrar</button>

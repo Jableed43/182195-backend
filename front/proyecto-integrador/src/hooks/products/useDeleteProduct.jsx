@@ -1,36 +1,26 @@
 import { useState } from 'react'
-import { API_URL } from '../../config'
+import { RUTAS } from '../../config'
+import { api } from '../../utils/api'
 
+// DELETE /api/libros/:id  ·  PROTEGIDA: token + rol vendedor o admin
+// El back devuelve 200 con el libro borrado (no 204), y además lo saca
+// de todos los carritos.
 function useDeleteProduct() {
   const [error, setError] = useState(null)
 
   const deleteProduct = async (productId) => {
     setError(null)
     try {
-       const response = await fetch(`${API_URL}products/${productId}`, {
-            method: "DELETE",
-            headers: {
-                "Content-type": "Application/json"
-            }
-        })
-
-        if(!response.ok){
-            throw new Error(`Http error, status: ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        // Dos opciones de retorno en DELETE
-        // 1. El dato borrado
-        // 2. Un objeto con un mensaje tipo "Producto borrado"
-        return data
-
+      return await api("DELETE", `${RUTAS.productos}/${productId}`, {
+        porDefecto: "Error al borrar el producto"
+      })
     } catch (error) {
-        console.error(error)
-        setError(error)
+      console.error(error)
+      setError(error)
+      return null
     }
   }
-  return {error, deleteProduct}
+  return { error, deleteProduct }
 }
 
 export default useDeleteProduct

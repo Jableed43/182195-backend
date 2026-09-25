@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/user/useAuth";
 
 function Header() {
-  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isStaff, isComprador, user, logout } = useAuth();
 
   const handleLogout = () => {
     logout()
@@ -55,11 +55,19 @@ function Header() {
                   </NavLink>
                 </li>
               )}
-              {/* Carrito: solo para usuarios autenticados */}
-              {isAuthenticated && (
+              {/* Carrito: solo el comprador tiene carrito */}
+              {isComprador && (
                 <li className="nav-item">
-                  <NavLink className="nav-link" aria-current="page" to="/cart">
+                  <NavLink className="nav-link" aria-current="page" to={`/cart/${user.id}`}>
                     Carrito
+                  </NavLink>
+                </li>
+              )}
+              {/* Cargar libros: vendedor y admin */}
+              {isStaff && (
+                <li className="nav-item">
+                  <NavLink className="nav-link" aria-current="page" to="/products/create">
+                    Cargar libro
                   </NavLink>
                 </li>
               )}
@@ -83,7 +91,7 @@ function Header() {
           </div>
         </div>
       </nav>
-      {user && <p> Bienvenido {user.email}!! </p>}
+      {user && <p> Bienvenido {user.email} · <strong>{user.role}</strong> </p>}
     </header>
   );
 }

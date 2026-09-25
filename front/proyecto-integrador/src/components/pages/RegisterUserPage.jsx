@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useRegisterUser from '../../hooks/user/useRegisterUser'
 import useAuth from '../../hooks/user/useAuth'
-import { notifySuccess, notifyError } from '../../utils/notify'
+import { notifyToast, notifyError } from '../../utils/notify'
 
 const FORM_VACIO = {
     email: "",
@@ -35,10 +35,10 @@ function RegisterUserPage() {
             // si el back devolvio token, el usuario ya queda logueado
             if (user.token) {
                 login(user)
-                await notifySuccess("Usuario registrado", `¡Bienvenido/a, ${user.name}!`)
+                notifyToast(`¡Bienvenido/a, ${user.name}!`)
                 navigate("/")
             } else {
-                notifySuccess("Usuario registrado", `La cuenta de ${user.name} se creó correctamente`)
+                notifyToast("Cuenta creada, ya podés entrar")
                 navigate("/user/login")
             }
         } else {

@@ -1,38 +1,27 @@
 import { useState } from 'react'
-import { API_URL } from '../../config'
+import { RUTAS } from '../../config'
+import { api } from '../../utils/api'
+import { productoALibro } from '../../utils/adaptadores'
 
+// PATCH /api/libros/:id  ·  PROTEGIDA: token + rol vendedor o admin
+// PATCH (no PUT) porque se mandan solo los campos que cambian.
 function usePatchProduct() {
   const [error, setError] = useState(null)
 
   const patchProduct = async (formData, productId) => {
     setError(null)
     try {
-        const response = await fetch(`${API_URL}products/${productId}`, {
-            method: "PATCH",
-            headers: {
-                "Content-type": "Application/json"
-            },
-            // Necesariamente se tiene que convertir formData en JSON
-            body: JSON.stringify(formData)
-        })
-
-        if(!response.ok){
-                    throw new Error(
-                        "Error al traer el producto", response.status
-                    )
-                }
-
-        const data = await response.json()
-
-        return data
-
+      return await api("PATCH", `${RUTAS.productos}/${productId}`, {
+        body: productoALibro(formData),
+        porDefecto: "Error al editar el producto"
+      })
     } catch (error) {
-        console.error(error)
-        setError(error)
-        return null
+      console.error(error)
+      setError(error)
+      return null
     }
   }
-  return {patchProduct, error}
+  return { patchProduct, error }
 }
 
 export default usePatchProduct

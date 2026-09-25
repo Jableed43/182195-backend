@@ -3,29 +3,31 @@
 // copia y los cambios de login/logout no se propagaban. Con el Context, todos
 // los componentes (Header, ProtectedRoute, ProductCard, etc.) comparten el
 // mismo estado de sesión y reaccionan de forma inmediata.
-import { createContext, useEffect, useState } from "react"
+import { createContext, useState } from "react"
 
-// Clave de la sesión en sessionStorage (podría ser un token)
+// Clave de la sesión en sessionStorage. Guarda el usuario y su token.
 const SESSION_KEY = "usuario"
 
 export const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null)
-    const [error, setError] = useState(null)
+// Lee la sesión guardada. Se ejecuta UNA vez, al crear el estado.
+function leerSesionGuardada() {
+    try {
+        return JSON.parse(sessionStorage.getItem(SESSION_KEY))
+    } catch (error) {
+        console.error(error)
+        return null
+    }
+}
 
-    // Al montar la app, recuperamos la sesión guardada (si existe)
-    useEffect(() => {
-        const storedUser = sessionStorage.getItem(SESSION_KEY)
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser))
-            } catch (error) {
-                console.error(error)
-                setError(error)
-            }
-        }
-    }, [])
+export function AuthProvider({ children }) {
+    // ⚠️ Se pasa la FUNCIÓN, no su resultado: así React la corre en el primer
+    // render (lazy initializer). Antes esto se hacía en un useEffect, que corre
+    // DESPUÉS del primer render: en ese primer render user era null, y al
+    // recargar una página protegida ProtectedRoute te mandaba al login aunque
+    // la sesión existiera.
+    const [user, setUser] = useState(leerSesionGuardada)
+    const [error, setError] = useState(null)
 
     // Crear sesión y persistirla
     const login = (userData) => {
@@ -39,13 +41,23 @@ export function AuthProvider({ children }) {
         sessionStorage.removeItem(SESSION_KEY)
     }
 
+    // Los tres roles del back: comprador, vendedor y admin.
+    //   comprador -> arma su carrito y compra
+    //   vendedor  -> administra el catalogo (libros y autores)
+    //   admin     -> todo lo anterior + administra usuarios
+    // "staff" = quien puede tocar el catalogo. Se usa para mostrar u ocultar
+    // botones; el permiso de verdad lo aplica el back con permitirRoles.
     const value = {
         user,
+        token: user?.token ?? null,
         login,
         logout,
         error,
         isAuthenticated: user !== null,
         isAdmin: user?.role === "admin",
+        isVendedor: user?.role === "vendedor",
+        isStaff: user?.role === "admin" || user?.role === "vendedor",
+        isComprador: user?.role === "comprador",
     }
 
     return (

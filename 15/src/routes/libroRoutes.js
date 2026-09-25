@@ -1,7 +1,10 @@
 import { Router } from 'express'
 import * as libroController from "../controllers/libroController.js"
+import { soloStaff } from '../utils/constants.js'
 
 const router = Router()
+
+
 
 // rutas
 
@@ -12,9 +15,11 @@ router.get("/", libroController.listarLibroController)
 router.get("/:id", libroController.obtenerLibroIdController)
 
 // crear libro
-router.post("/", libroController.crearLibroController)
+router.post("/", soloStaff, libroController.crearLibroController)
 
-router.patch("/:id", libroController.actualizarLibroController);
-router.delete("/:id", libroController.eliminarLibroController);
+router.patch("/:id", soloStaff, libroController.actualizarLibroController);
+
+router.delete("/:id", soloStaff, libroController.eliminarLibroController);
+
 
 export default router

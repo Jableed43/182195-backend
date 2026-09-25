@@ -21,10 +21,9 @@ function UserDetailModal({ user, onClose }) {
       >
         <h2>Detalle del usuario</h2>
         <p><strong>ID:</strong> {user.id}</p>
-        <p><strong>Nombre:</strong> {user.name}</p>
+        <p><strong>Nombre:</strong> {user.name} {user.lastName}</p>
         <p><strong>Email:</strong> {user.email}</p>
         <p><strong>Rol:</strong> {user.role}</p>
-        {user.superadmin && <p><strong>Superadmin:</strong> Sí</p>}
         <button className="btn btn-secondary mt-2" onClick={onClose}>Cerrar</button>
       </div>
     </div>

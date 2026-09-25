@@ -25,6 +25,50 @@ export const libroAProducto = (libro) => ({
     available: libro.disponible,
 })
 
+// product del front -> libro del back (para POST y PATCH)
+// Solo se mandan los campos que el usuario completó: el back valida el resto.
+export const productoALibro = (form) => {
+    const libro = {
+        titulo: form.name,
+        precio: Number(form.price),
+        stock: Number(form.quantity),
+    }
+    // el ISBN es obligatorio al crear, pero en un PATCH puede no venir
+    if (form.isbn) libro.isbn = form.isbn
+    if (form.genero) libro.genero = form.genero
+    if (form.anio) libro.anio = Number(form.anio)
+    // "" significa "sin autor": se manda null para poder sacárselo a un libro
+    if (form.autor !== undefined) libro.autor = form.autor || null
+    if (form.available !== undefined) libro.disponible = form.available
+
+    return libro
+}
+
+// libro del back -> el formulario de editar (campos en inglés, como el form)
+export const libroAFormulario = (libro) => ({
+    name: libro.titulo ?? "",
+    isbn: libro.isbn ?? "",
+    price: libro.precio ?? 0,
+    quantity: libro.stock ?? 0,
+    genero: libro.genero ?? "novela",
+    anio: libro.anio ?? "",
+    // el autor viene POPULADO (un objeto) en los GET: para el select se necesita el id
+    autor: libro.autor?._id ?? libro.autor ?? "",
+    available: libro.disponible ?? true,
+})
+
+// carrito del back -> lo que dibuja CartPage
+// El back ya manda el subtotal y el total calculados con el precio vivo.
+export const carritoAVista = (carrito) => ({
+    items: (carrito?.items ?? []).map((item) => ({
+        product: libroAProducto(item.libro),
+        quantity: item.cantidad,
+        subtotal: item.subtotal,
+    })),
+    unidades: carrito?.unidades ?? 0,
+    total: carrito?.total ?? 0,
+})
+
 // usuario del back -> user del front (el AuthContext mira user.role para isAdmin)
 export const usuarioAUser = (usuario, token) => ({
     id: usuario._id ?? usuario.id,

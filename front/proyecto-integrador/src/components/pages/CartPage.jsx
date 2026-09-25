@@ -1,38 +1,12 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import useCart from "../../hooks/cart/useCart"
-import useGetProducts from "../../hooks/products/useGetProducts"
-import usePatchProduct from "../../hooks/products/usePatchProduct"
-import usePostOrder from "../../hooks/cart/usePostOrder"
-import useAuth from "../../hooks/user/useAuth"
-import { notifySuccess, notifyError, notifyInfo, confirmAction } from "../../utils/notify"
+import { notifyError, confirmAction } from "../../utils/notify"
 
-// Vista del carrito (/cart), accesible solo a usuarios autenticados.
-// Cruza los items del carrito (productId + quantity) con los datos completos
-// del producto (nombre, precio, stock) traídos de la API. En el checkout
-// descuenta el stock con PATCH individuales y registra la orden con POST /orders.
+// Vista del carrito (/cart), solo para compradores.
+// Ya no cruza items con productos ni calcula totales: el back devuelve el
+// carrito con los libros populados, el subtotal de cada ítem y el total,
+// calculados con el precio VIVO del libro.
 function CartPage() {
-  const { items, increment, decrement, removeItem, clearCart } = useCart()
-  const { products, loading } = useGetProducts()
-  const { patchProduct } = usePatchProduct()
-  const { postOrder } = usePostOrder()
-  const { user } = useAuth()
-  const navigate = useNavigate()
-
-  const [processing, setProcessing] = useState(false)
-
-  // Cruce de cada item con su producto correspondiente
-  const detailedItems = items
-    .map((item) => {
-      const product = products.find((p) => p.id === item.productId)
-      return product ? { ...item, product } : null
-    })
-    .filter(Boolean)
-
-  const total = detailedItems.reduce(
-    (acc, { product, quantity }) => acc + product.price * quantity,
-    0
-  )
+  const { items, unidades, total, loading, error, increment, decrement, removeItem, clearCart } = useCart()
 
   const handleClearCart = async () => {
     const confirmed = await confirmAction(
@@ -43,70 +17,21 @@ function CartPage() {
     if (confirmed) clearCart()
   }
 
-  const handleCheckout = async () => {
-    if (detailedItems.length === 0) {
-      notifyInfo("El carrito está vacío")
-      return
-    }
-
-    // Validar stock disponible antes de comprar
-    const sinStock = detailedItems.find(
-      ({ product, quantity }) => quantity > product.quantity
-    )
-    if (sinStock) {
-      notifyError(
-        "Stock insuficiente",
-        `"${sinStock.product.name}" tiene solo ${sinStock.product.quantity} en stock.`
-      )
-      return
-    }
-
-    const confirmed = await confirmAction(
-      "Confirmar compra",
-      `Total a pagar: $${total}`,
-      "Sí, comprar"
-    )
-    if (!confirmed) return
-
-    setProcessing(true)
-    try {
-      // Descontar stock de cada producto (PATCH individuales)
-      for (const { product, quantity } of detailedItems) {
-        const result = await patchProduct(
-          { quantity: product.quantity - quantity },
-          product.id
-        )
-        if (!result) throw new Error("Error al actualizar el stock")
-      }
-
-      // Registrar la orden de compra
-      const order = {
-        userId: user.id,
-        items: items.map(({ productId, quantity }) => ({ productId, quantity })),
-        total,
-        createdAt: new Date().toISOString(),
-      }
-      const savedOrder = await postOrder(order)
-      if (!savedOrder) throw new Error("Error al registrar la orden")
-
-      clearCart()
-      await notifySuccess("¡Compra realizada con éxito!", `Total: $${total}`)
-      navigate("/")
-    } catch (error) {
-      console.error(error)
-      notifyError("Error en la compra", "Ocurrió un error al procesar la compra. Intentá nuevamente.")
-    } finally {
-      setProcessing(false)
-    }
+  // El back valida el stock: si no alcanza, contesta 409 con el detalle.
+  const conAviso = async (accion) => {
+    const { ok, error } = await accion()
+    if (!ok) notifyError("No se pudo actualizar el carrito", error?.message || "Revisá el stock disponible.")
   }
 
-  if (loading) return <p className="text-center my-4">Cargando carrito...</p>
+  if (loading && items.length === 0) return <p className="text-center my-4">Cargando carrito...</p>
 
   return (
     <div className="container my-4">
       <h1 className="mb-4">Mi Carrito</h1>
 
-      {detailedItems.length === 0 ? (
+      {error && <p className="text-danger">{error.message}</p>}
+
+      {items.length === 0 ? (
         <p>Tu carrito está vacío.</p>
       ) : (
         <>
@@ -121,20 +46,18 @@ function CartPage() {
               </tr>
             </thead>
             <tbody>
-              {detailedItems.map(({ product, quantity }) => (
+              {items.map(({ product, quantity, subtotal }) => (
                 <tr key={product.id}>
-                  <td style={{ textTransform: "capitalize" }}>
-                    {product.name}
-                  </td>
+                  <td style={{ textTransform: "capitalize" }}>{product.name}</td>
                   <td>${product.price}</td>
                   <td>
-                    <button className="btn btn-outline-secondary btn-sm" onClick={() => decrement(product.id)}>-</button>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={loading} onClick={() => conAviso(() => decrement(product.id))}>-</button>
                     <span className="mx-3">{quantity}</span>
-                    <button className="btn btn-outline-secondary btn-sm" onClick={() => increment(product.id)}>+</button>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={loading} onClick={() => conAviso(() => increment(product.id))}>+</button>
                   </td>
-                  <td>${product.price * quantity}</td>
+                  <td>${subtotal}</td>
                   <td>
-                    <button className="btn btn-outline-danger btn-sm" onClick={() => removeItem(product.id)}>Quitar</button>
+                    <button className="btn btn-outline-danger btn-sm" disabled={loading} onClick={() => removeItem(product.id)}>Quitar</button>
                   </td>
                 </tr>
               ))}
@@ -142,13 +65,25 @@ function CartPage() {
           </table>
 
           <h2 className="my-3">Total: ${total}</h2>
+          <p className="text-muted">{unidades} {unidades === 1 ? "unidad" : "unidades"}</p>
 
-          <button className="btn btn-success me-2" onClick={handleCheckout} disabled={processing}>
-            {processing ? "Procesando..." : "Finalizar compra"}
+          {/* Confirmar la compra crea un PEDIDO y descuenta el stock.
+              Ese endpoint (POST /api/pedidos) todavía no existe en el back:
+              se implementa en la clase de pedidos. Hasta entonces, el botón
+              queda deshabilitado en vez de pegarle a una ruta inexistente. */}
+          <button className="btn btn-success me-2" disabled title="Se habilita en la clase de pedidos">
+            Finalizar compra
           </button>
-          <button className="btn btn-outline-secondary" onClick={handleClearCart} disabled={processing}>
+          <button className="btn btn-outline-secondary" onClick={handleClearCart} disabled={loading}>
             Vaciar carrito
           </button>
+
+          <p className="text-muted mt-3">
+            <small>
+              El carrito ya se guarda en el servidor: si cerrás sesión y volvés a entrar, sigue acá.
+              Confirmar la compra llega con los pedidos.
+            </small>
+          </p>
         </>
       )}
     </div>

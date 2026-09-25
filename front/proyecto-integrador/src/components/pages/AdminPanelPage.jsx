@@ -1,17 +1,17 @@
 import { useState } from "react"
 import { NavLink } from "react-router-dom"
 import useGetUsers from "../../hooks/user/useGetUsers"
-import useDeleteUser from "../../hooks/user/useDeleteUser"
-import { notifySuccess, notifyError, notifyInfo, confirmAction } from "../../utils/notify"
 import UserDetailModal from "../UserDetailModal"
 
 // Panel de Administrador (Gestión de Usuarios).
 // Layout tipo Dashboard con sidebar. El buscador filtra en memoria del cliente
-// sobre el estado de React (no vuelve a pegarle a la API). Los detalles se ven
-// en un modal y la eliminación es Soft Delete con confirmación nativa.
+// sobre el estado de React (no vuelve a pegarle a la API).
+//
+// La lista sale de GET /api/usuarios, que el back reserva para el rol admin.
+// Dar de baja usuarios todavía no existe en el back (no hay DELETE ni PATCH
+// de usuarios): por eso ese botón no está. Cuando exista, vuelve.
 function AdminPanelPage() {
-  const { users, error, loading, refetch } = useGetUsers()
-  const { deleteUser } = useDeleteUser()
+  const { users, error, loading } = useGetUsers()
 
   const [search, setSearch] = useState("")
   const [selectedUser, setSelectedUser] = useState(null)
@@ -25,29 +25,6 @@ function AdminPanelPage() {
           u.email?.toLowerCase().includes(term)
       )
     : users
-
-  const handleDelete = async (user) => {
-    // El Superadmin es inmutable: no puede eliminarse
-    if (user.superadmin) {
-      notifyInfo("Acción no permitida", "El Superadmin no puede ser eliminado.")
-      return
-    }
-    const confirmed = await confirmAction(
-      `¿Eliminar a "${user.name}"?`,
-      "El usuario dejará de listarse y no podrá iniciar sesión.",
-      "Sí, eliminar"
-    )
-    if (confirmed) {
-      const result = await deleteUser(user.id)
-      if (result) {
-        if (selectedUser?.id === user.id) setSelectedUser(null)
-        refetch()
-        notifySuccess("Usuario eliminado", `"${user.name}" fue dado de baja correctamente.`)
-      } else {
-        notifyError("Error al eliminar", "Ocurrió un error al eliminar el usuario.")
-      }
-    }
-  }
 
   return (
     <div style={{ display: "flex", minHeight: "70vh" }}>
@@ -71,7 +48,7 @@ function AdminPanelPage() {
           📦 Productos
         </NavLink>
         <NavLink to="/products/create" style={{ color: "white" }}>
-          ➕ Crear producto
+          ➕ Cargar libro
         </NavLink>
       </aside>
 
@@ -90,6 +67,13 @@ function AdminPanelPage() {
 
         {loading && <p>Cargando usuarios...</p>}
         {error && <p className="text-danger">{error?.message || String(error)}</p>}
+
+        <p className="text-muted">
+          <small>
+            Dar de baja usuarios y cambiar roles todavía no existen en la API.
+            Los vendedores y el admin se crean con el seed.
+          </small>
+        </p>
 
         {!loading && !error && (
           <table className="table table-striped table-hover align-middle">
@@ -111,20 +95,15 @@ function AdminPanelPage() {
               )}
               {filteredUsers.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.name}</td>
+                  <td>{user.name} {user.lastName}</td>
                   <td>{user.email}</td>
                   <td>
-                    {user.role}{user.superadmin && " ⭐"}
+                    <span className={`badge text-bg-${user.role === "admin" ? "danger" : user.role === "vendedor" ? "warning" : "secondary"}`}>
+                      {user.role}
+                    </span>
                   </td>
                   <td>
-                    <button className="btn btn-outline-primary btn-sm me-2" onClick={() => setSelectedUser(user)}>Ver</button>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDelete(user)}
-                      disabled={user.superadmin}
-                    >
-                      Eliminar
-                    </button>
+                    <button className="btn btn-outline-primary btn-sm" onClick={() => setSelectedUser(user)}>Ver</button>
                   </td>
                 </tr>
               ))}
