@@ -10,11 +10,13 @@ src/
 │   ├── api.js         ⭐ el ÚNICO lugar que hace fetch: agrega el token y traduce errores
 │   ├── adaptadores.js ⭐ traduce back (español) ↔ front (inglés)
 │   └── notify.js      avisos: toast, error, confirmación
-├── context/
-│   └── AuthContext    la sesión: quién está logueado, su rol y su token
+├── context/           ⭐ lo que comparten PANTALLAS DISTINTAS
+│   ├── AuthContext    la sesión: quién está logueado, su rol y su token
+│   └── CartContext    el carrito: lo miran el Header (contador), el listado y /cart
 ├── hooks/             traen y mandan datos. Uno por operación
 │   ├── products/      useGetProducts · useGetProductById · usePost · usePatch · useDelete · useGetAutores
-│   ├── cart/          useCart (las 5 operaciones del carrito)
+│   ├── cart/          useCart (3 líneas: lee el CartContext, como useAuth)
+│   ├── orders/        useOrders (listar, comprar, pagar, cancelar)
 │   └── user/          useAuth · useLoginUser · useRegisterUser · useGetUsers
 └── components/
     ├── layout/        Header · Footer · Layout · ProtectedRoute
@@ -29,6 +31,11 @@ Un hook no dibuja; devuelve datos, `loading` y `error`.
 
 Y todos los hooks pasan por `utils/api.js`, que es el único que sabe la URL del back,
 mete el token y convierte la respuesta de error en un mensaje legible.
+
+**¿Hook o contexto?** Si el dato lo mira **una sola pantalla**, hook (los pedidos).
+Si lo miran **varias a la vez**, contexto (la sesión y el carrito). Con un hook, cada
+componente se arma su propia copia del estado: el contador del Header no se enteraría
+de que agregaste un libro desde el listado.
 
 ## El recorrido de un dato
 
@@ -54,6 +61,8 @@ Componente          pinta la card
 |---|:--:|:--:|:--:|
 | ver el catálogo | ✅ | ✅ | ✅ |
 | carrito | ✅ | ❌ | ❌ |
+| comprar, pagar y cancelar su pedido | ✅ | ❌ | ❌ |
+| ver TODOS los pedidos | ❌ | ✅ | ✅ |
 | cargar, editar y borrar libros | ❌ | ✅ | ✅ |
 | panel de usuarios | ❌ | ❌ | ✅ |
 

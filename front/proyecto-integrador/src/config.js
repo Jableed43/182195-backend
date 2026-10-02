@@ -7,12 +7,14 @@ export const RUTAS = {
     autores: "autores",
     usuarios: "usuarios",
     carrito: "carrito",
+    pedidos: "pedidos",
+    pedidosTodos: "pedidos/todos",
     login: "auth/login",
     registro: "auth/registro",
     perfil: "auth/perfil",
 }
 
-// Lo que el back TODAVIA no tiene (se ve en la clase de pedidos):
-//   POST /api/pedidos  -> confirmar la compra
+// Lo que el back TODAVIA no tiene:
 //   DELETE /api/usuarios/:id -> baja de usuarios
+//   PATCH  /api/usuarios/:id -> cambiar el rol
 // Mientras tanto, el front muestra esas acciones deshabilitadas.

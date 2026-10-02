@@ -1,8 +1,14 @@
 import { NavLink } from "react-router-dom";
 import useAuth from "../../hooks/user/useAuth";
+import useCart from "../../hooks/cart/useCart";
 
 function Header() {
   const { isAuthenticated, isAdmin, isStaff, isComprador, user, logout } = useAuth();
+  // ⭐ El contador del carrito. Esto es lo que OBLIGA a tener el CartContext:
+  // el Header y el listado de productos son pantallas distintas, y las dos
+  // tienen que ver el mismo carrito. Con un useState local, agregar un libro
+  // desde el listado no actualizaba este número.
+  const { unidades } = useCart();
 
   const handleLogout = () => {
     logout()
@@ -58,8 +64,19 @@ function Header() {
               {/* Carrito: solo el comprador tiene carrito */}
               {isComprador && (
                 <li className="nav-item">
-                  <NavLink className="nav-link" aria-current="page" to={`/cart/${user.id}`}>
+                  <NavLink className="nav-link" aria-current="page" to="/cart">
                     Carrito
+                    {unidades > 0 && (
+                      <span className="badge text-bg-primary ms-1">{unidades}</span>
+                    )}
+                  </NavLink>
+                </li>
+              )}
+              {/* Pedidos: el comprador ve los suyos, el staff ve todos */}
+              {(isComprador || isStaff) && (
+                <li className="nav-item">
+                  <NavLink className="nav-link" aria-current="page" to="/orders">
+                    {isStaff ? "Pedidos" : "Mis pedidos"}
                   </NavLink>
                 </li>
               )}

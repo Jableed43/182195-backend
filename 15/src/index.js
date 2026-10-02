@@ -8,6 +8,7 @@ import { manejarErrores } from './middleware/manejarErrores.js';
 import usuarioRoutes from "./routes/usuarioRoutes.js"
 import carritoRoutes from "./routes/carritoRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import pedidoRoutes from "./routes/pedidoRoutes.js" // clase 22
 
 await conectarDB()
 
@@ -32,6 +33,7 @@ app.use("/api/libros", libroRoutes)
 app.use("/api/autores", autorRoutes)
 app.use("/api/usuarios", usuarioRoutes)
 app.use("/api/carrito", carritoRoutes)
+app.use("/api/pedidos", pedidoRoutes) // clase 22
 
 // Caso 404 en caso que la direccion no exista
 app.use((req, res) => {

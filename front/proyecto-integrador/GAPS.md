@@ -1,7 +1,7 @@
 # Gaps conocidos del front
 
 Lo que **falta o está a medias**, anotado a propósito. Si algo está acá, es una decisión,
-no un olvido. Fecha de corte: septiembre 2026, después de la clase de sesión y roles.
+no un olvido. Fecha de corte: 1 de octubre de 2026, después de la clase de pedidos y checkout.
 
 Referencia del back: `apuntes-utn/CODIGO/backend/express/7/15`.
 
@@ -13,15 +13,15 @@ Estas dos pantallas están **deshabilitadas en la interfaz**, con un cartel que 
 
 | Gap | Dónde | Qué falta en el back | Qué hay que hacer en el front |
 |---|---|---|---|
-| **Finalizar compra** | [`CartPage.jsx`](src/components/pages/CartPage.jsx) · botón deshabilitado | `POST /api/usuarios/:id/pedidos` y `GET /api/pedidos/:id` | un hook `usePostOrder` que llame al endpoint, vacíe el carrito y muestre el pedido |
 | **Dar de baja un usuario** | [`AdminPanelPage.jsx`](src/components/pages/AdminPanelPage.jsx) · botón quitado | `DELETE /api/usuarios/:id` (o un `activo: false`) | un hook `useDeleteUser` y el botón de vuelta en la tabla |
 | **Cambiar el rol de un usuario** | idem | `PATCH /api/usuarios/:id/rol`, solo admin | un select de rol en la fila o en el modal |
-| **Historial de compras** | no existe la pantalla | `GET /api/usuarios/:id/pedidos` | página `/mis-pedidos` |
+| **Pago de verdad** | el botón "Pagar" solo cambia el estado | integrar una pasarela (Mercado Pago, Stripe) | el redirect a la pasarela y la pantalla de vuelta |
 
-> Había dos hooks (`usePostOrder` y `useDeleteUser`) escritos contra la API vieja de mockapi
-> (`/orders`, `/user`). Se **borraron**: apuntaban a rutas que no existen y confundían. Cuando
-> el back tenga esos endpoints, se escriben de nuevo, cortitos, copiando el patrón de
-> [`useGetUsers.jsx`](src/hooks/user/useGetUsers.jsx).
+> ✅ **Resuelto el 1/10/2026:** el checkout ya anda. `POST /api/pedidos` desde
+> [`CartPage.jsx`](src/components/pages/CartPage.jsx), la pantalla `/orders`
+> ([`OrdersPage.jsx`](src/components/pages/OrdersPage.jsx)) y el hook
+> [`useOrders.jsx`](src/hooks/orders/useOrders.jsx), que sirve tanto "mis pedidos"
+> como la vista del staff (`/api/pedidos/todos`).
 
 ---
 
@@ -29,7 +29,8 @@ Estas dos pantallas están **deshabilitadas en la interfaz**, con un cartel que 
 
 | Gap | Por qué está así | Cuándo lo cambiaría |
 |---|---|---|
-| **El carrito no está en un contexto** | `ProductCard` y `CartPage` tienen cada uno su copia de `useCart`. Hoy no se nota | el día que pongamos un **contador de ítems en el header**: no se va a actualizar al agregar. Ahí `CartContext`, igual que `AuthContext` |
+| ~~**El carrito no está en un contexto**~~ | ✅ **resuelto el 1/10/2026**: pasó a [`CartContext.jsx`](src/context/CartContext.jsx) justo porque se puso el contador en el header, que era el caso previsto | — |
+| **Los pedidos NO están en un contexto** | `useOrders` lo usan `CartPage` (solo para `createOrder`) y `OrdersPage`. Son dos copias, pero ninguna muestra la lista en pantalla a la vez | si algún día hay un contador de pedidos pendientes en el header, sube a contexto. La regla: al contexto solo sube lo que comparten pantallas distintas |
 | **El 401 no se maneja en un solo lugar** | cuando el token vence (2 h), cada pantalla muestra su propio error | un `if (status === 401) logout()` en [`api.js`](src/utils/api.js) y listo |
 | **El token vive en `sessionStorage`** | simple y suficiente para clase | en producción: cookie `httpOnly`. Implica tocar el back (CORS con credenciales, CSRF) |
 | **Cada hook repite el mismo `try/catch`** | se ve el patrón completo, sin magia | si crecen a diez, un `useApi` genérico |

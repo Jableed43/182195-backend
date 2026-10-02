@@ -8,3 +8,5 @@ que pasa si hay reclamo por rotura o devolucion como se constata que ese product
 
 Armar un frontend (adaptar el front mismo de la comisión de front)
 
+contra fuerza bruta: manejar el error 429
+proxy tenemos?

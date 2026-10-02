@@ -1,12 +1,43 @@
+import { useNavigate } from "react-router-dom"
 import useCart from "../../hooks/cart/useCart"
-import { notifyError, confirmAction } from "../../utils/notify"
+import useOrders from "../../hooks/orders/useOrders"
+import { notifyError, confirmAction, notifyToast } from "../../utils/notify"
 
 // Vista del carrito (/cart), solo para compradores.
 // Ya no cruza items con productos ni calcula totales: el back devuelve el
 // carrito con los libros populados, el subtotal de cada ítem y el total,
 // calculados con el precio VIVO del libro.
 function CartPage() {
-  const { items, unidades, total, loading, error, increment, decrement, removeItem, clearCart } = useCart()
+  // El carrito ahora sale del CartContext: es el MISMO que ve el contador del Header.
+  const { items, unidades, total, loading, error, increment, decrement, removeItem, clearCart, refetch } = useCart()
+  const { createOrder, loading: creando } = useOrders()
+  const navigate = useNavigate()
+
+  // ⭐ CHECKOUT. No se manda nada: el back arma el pedido con el carrito del
+  // usuario del token y calcula el total él mismo. Mandar el total desde acá
+  // sería dejar que el cliente elija cuánto paga.
+  const handleCheckout = async () => {
+    const confirmado = await confirmAction(
+      "¿Confirmar la compra?",
+      `Vas a comprar ${unidades} ${unidades === 1 ? "unidad" : "unidades"} por $${total}.`,
+      "Sí, comprar"
+    )
+    if (!confirmado) return
+
+    const { ok, error } = await createOrder()
+
+    if (!ok) {
+      // 409 si alguien se llevó el último ejemplar mientras mirabas el carrito
+      notifyError("No se pudo confirmar la compra", error?.message || "Revisá el stock disponible.")
+      refetch()
+      return
+    }
+
+    // el back ya vació el carrito: hay que volver a traerlo para que el Header se actualice
+    await refetch()
+    notifyToast("¡Compra confirmada!")
+    navigate("/orders")
+  }
 
   const handleClearCart = async () => {
     const confirmed = await confirmAction(
@@ -67,12 +98,11 @@ function CartPage() {
           <h2 className="my-3">Total: ${total}</h2>
           <p className="text-muted">{unidades} {unidades === 1 ? "unidad" : "unidades"}</p>
 
-          {/* Confirmar la compra crea un PEDIDO y descuenta el stock.
-              Ese endpoint (POST /api/pedidos) todavía no existe en el back:
-              se implementa en la clase de pedidos. Hasta entonces, el botón
-              queda deshabilitado en vez de pegarle a una ruta inexistente. */}
-          <button className="btn btn-success me-2" disabled title="Se habilita en la clase de pedidos">
-            Finalizar compra
+          {/* Confirmar la compra crea un PEDIDO (POST /api/pedidos), descuenta
+              el stock y vacía el carrito. Todo eso lo hace el back en una sola
+              llamada: si algo falla, devuelve el stock que ya había descontado. */}
+          <button className="btn btn-success me-2" onClick={handleCheckout} disabled={loading || creando}>
+            {creando ? "Confirmando..." : "Finalizar compra"}
           </button>
           <button className="btn btn-outline-secondary" onClick={handleClearCart} disabled={loading}>
             Vaciar carrito
@@ -80,8 +110,8 @@ function CartPage() {
 
           <p className="text-muted mt-3">
             <small>
-              El carrito ya se guarda en el servidor: si cerrás sesión y volvés a entrar, sigue acá.
-              Confirmar la compra llega con los pedidos.
+              El carrito se guarda en el servidor: si cerrás sesión y volvés a entrar, sigue acá.
+              Al confirmar, se convierte en un pedido y el precio queda congelado.
             </small>
           </p>
         </>

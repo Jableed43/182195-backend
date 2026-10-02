@@ -9,6 +9,7 @@ import LoginUserPage from './components/pages/LoginUserPage'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import AdminPanelPage from './components/pages/AdminPanelPage'
 import CartPage from './components/pages/CartPage'
+import OrdersPage from './components/pages/OrdersPage'
 
 export const router = createBrowserRouter([
     {
@@ -58,6 +59,17 @@ export const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute roles={["comprador"]}>
                         <CartPage />
+                    </ProtectedRoute>
+                )
+            },
+            {
+                // los pedidos los ven los tres roles, pero NO lo mismo:
+                // el comprador ve los suyos (GET /api/pedidos) y el staff ve
+                // todos (GET /api/pedidos/todos). Eso lo decide useOrders.
+                path: "/orders",
+                element: (
+                    <ProtectedRoute roles={["comprador", "vendedor", "admin"]}>
+                        <OrdersPage />
                     </ProtectedRoute>
                 )
             },

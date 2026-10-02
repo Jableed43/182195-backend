@@ -69,6 +69,28 @@ export const carritoAVista = (carrito) => ({
     total: carrito?.total ?? 0,
 })
 
+// pedido del back -> lo que dibuja la página de pedidos.
+// ⚠️ Las líneas del pedido NO se pasan por libroAProducto: el pedido guarda una
+// FOTO (título y precio del momento de la compra), no el libro vivo. Si el libro
+// cambia de precio o se borra, el pedido tiene que seguir mostrando lo que se pagó.
+export const pedidoAVista = (pedido) => ({
+    id: pedido._id,
+    fecha: new Date(pedido.createdAt).toLocaleString("es-AR"),
+    estado: pedido.estado,
+    total: pedido.total,
+    lineas: (pedido.items ?? []).map((linea) => ({
+        libroId: linea.libro,
+        titulo: linea.titulo,
+        precioUnitario: linea.precioUnitario,
+        cantidad: linea.cantidad,
+        subtotal: linea.subtotal,
+    })),
+    // solo viene populado en /pedidos/todos (la vista del staff)
+    comprador: pedido.usuario?.nombre
+        ? `${pedido.usuario.nombre} ${pedido.usuario.apellido ?? ""}`.trim()
+        : null,
+})
+
 // usuario del back -> user del front (el AuthContext mira user.role para isAdmin)
 export const usuarioAUser = (usuario, token) => ({
     id: usuario._id ?? usuario.id,
