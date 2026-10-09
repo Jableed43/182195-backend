@@ -20,7 +20,8 @@ export const libroAProducto = (libro) => ({
     description: [libro.autor?.nombre, libro.genero].filter(Boolean).join(" · "),
     price: libro.precio,
     quantity: libro.stock,
-    image: IMAGEN_LIBRO,
+    // ⭐ la tapa que subio el vendedor. Si el libro todavia no tiene, el icono de relleno
+    image: libro.imagen || IMAGEN_LIBRO,
     highlighted: false,
     available: libro.disponible,
 })
@@ -44,6 +45,32 @@ export const productoALibro = (form) => {
     return libro
 }
 
+// ⭐ product del front -> FormData, para cuando hay una IMAGEN.
+// Un archivo no se puede mandar en un JSON: hay que usar multipart/form-data.
+// Esto arma los mismos campos que productoALibro, pero uno por uno, y agrega
+// el archivo al final.
+export const libroAFormData = (form) => {
+    const libro = productoALibro(form)
+    const datos = new FormData()
+
+    // ⚠️ FormData manda TODO como texto: el precio viaja "15000", no 15000.
+    // No es un problema: el schema del back dice Number y Mongoose lo convierte.
+    // Por eso tampoco se mandan los campos vacios: "" romperia una validacion.
+    for (const [clave, valor] of Object.entries(libro)) {
+        if (valor !== undefined && valor !== null && valor !== "") {
+            datos.append(clave, valor)
+        }
+    }
+
+    // el nombre del campo tiene que ser EXACTAMENTE el que espera el back:
+    // upload.single("imagen"). Si dice "foto", al back no le llega ningun archivo.
+    if (form.imagen instanceof File) {
+        datos.append("imagen", form.imagen)
+    }
+
+    return datos
+}
+
 // libro del back -> el formulario de editar (campos en inglés, como el form)
 export const libroAFormulario = (libro) => ({
     name: libro.titulo ?? "",
@@ -55,6 +82,10 @@ export const libroAFormulario = (libro) => ({
     // el autor viene POPULADO (un objeto) en los GET: para el select se necesita el id
     autor: libro.autor?._id ?? libro.autor ?? "",
     available: libro.disponible ?? true,
+    // el archivo nuevo que elija el usuario (null = no cambiar la tapa)
+    imagen: null,
+    // la tapa que YA tiene, solo para mostrarla al lado del input
+    imagenActual: libro.imagen ?? null,
 })
 
 // carrito del back -> lo que dibuja CartPage

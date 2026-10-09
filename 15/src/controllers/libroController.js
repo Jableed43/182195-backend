@@ -18,12 +18,12 @@ export const obtenerLibroIdController = async (req, res) => {
 }
 
 export const crearLibroController = async (req, res) => {
-    const libro = await crearLibroService(req.body)
+    const libro = await crearLibroService(req.body, req.file)
     res.status(201).json(libro)
 }
 
 export const actualizarLibroController = async (req, res) => {
-    const libro = await actualizarLibroService(req.params.id, req.body)
+    const libro = await actualizarLibroService(req.params.id, req.body, req.file)
     if(!libro){
         return res.status(404).json({ error: "No existe ese libro"})
     }

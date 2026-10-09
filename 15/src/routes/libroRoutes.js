@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import * as libroController from "../controllers/libroController.js"
 import { soloStaff } from '../utils/constants.js'
+import { subirImagen } from '../middleware/subirImagen.js'
 
 const router = Router()
 
@@ -15,11 +16,10 @@ router.get("/", libroController.listarLibroController)
 router.get("/:id", libroController.obtenerLibroIdController)
 
 // crear libro
-router.post("/", soloStaff, libroController.crearLibroController)
+router.post("/", soloStaff, subirImagen, libroController.crearLibroController)
 
-router.patch("/:id", soloStaff, libroController.actualizarLibroController);
+router.patch("/:id", soloStaff, subirImagen, libroController.actualizarLibroController);
 
 router.delete("/:id", soloStaff, libroController.eliminarLibroController);
-
 
 export default router

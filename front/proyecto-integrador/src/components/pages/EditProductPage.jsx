@@ -10,6 +10,9 @@ import { notifyToast, notifyError } from "../../utils/notify";
 function EditProductPage() {
   const [form, setForm] = useState({
     name: "", isbn: "", price: 0, quantity: 0, genero: "novela", anio: "", autor: "", available: true,
+    // imagen = el archivo NUEVO (null = no se cambia la tapa)
+    // imagenActual = la URL de la tapa que ya tiene, solo para mostrarla
+    imagen: null, imagenActual: null,
   });
   const [cargando, setCargando] = useState(true);
 
@@ -36,7 +39,14 @@ function EditProductPage() {
   }, [id]);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
+
+    // un input de tipo file no tiene "value": tiene e.target.files
+    if (type === "file") {
+      setForm({ ...form, [name]: files[0] ?? null });
+      return;
+    }
+
     setForm({
       ...form,
       [name]: type === "checkbox" ? checked : type === "number" ? parseInt(value) || 0 : value,
@@ -122,6 +132,27 @@ function EditProductPage() {
           <input className="form-check-input" onChange={handleInputChange} checked={form.available}
             type="checkbox" name="available" id="available" />
           <label className="form-check-label" htmlFor="available">A la venta</label>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="imagen">Cambiar la tapa</label>
+
+          {/* la tapa actual, para saber cuál se está reemplazando */}
+          {form.imagenActual && (
+            <div className="mb-2">
+              <img src={form.imagenActual} alt="Tapa actual"
+                style={{ height: "90px", objectFit: "cover", borderRadius: "4px" }} />
+            </div>
+          )}
+
+          <input className="form-control" onChange={handleInputChange}
+            type="file" accept="image/*" name="imagen" id="imagen" />
+
+          <p className="form-text mb-0">
+            {form.imagen
+              ? `${form.imagen.name} · ${Math.round(form.imagen.size / 1024)} KB`
+              : "Si no elegís ninguna, la tapa queda como está."}
+          </p>
         </div>
 
         <button className="btn btn-primary me-2" type="submit">Guardar cambios</button>

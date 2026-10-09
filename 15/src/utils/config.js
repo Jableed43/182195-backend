@@ -15,5 +15,12 @@ const JWT_SECRET = process.env.JWT_SECRET || "secreto-de-clase-no-usar-en-produc
 // cuanto dura el token. Corto = mas seguro (si te lo roban vence antes) y mas molesto
 const JWT_EXPIRA = process.env.JWT_EXPIRA || "2h"
 
-export {MONGO_URI, PORT, JWT_SECRET, JWT_EXPIRA}
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_KEY
+
+const STORAGE = process.env.STORAGE || "local"
+const CARPETA_IMAGENES = process.env.CARPETA_IMAGENES || "uploads"
+
+
+export {MONGO_URI, PORT, JWT_SECRET, JWT_EXPIRA, SUPABASE_URL, SUPABASE_KEY, STORAGE, CARPETA_IMAGENES }
 

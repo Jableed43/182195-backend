@@ -8,8 +8,8 @@ import { notifyToast, notifyError } from "../../utils/notify";
 // estado-input-evento
 //
 // Los campos son los del LIBRO en el back: título, ISBN, precio, stock,
-// género, año y autor. El back ya no acepta "imagen" ni "descripción":
-// la descripción de la card se arma con el autor y el género (ver adaptadores).
+// género, año, autor y la TAPA (un archivo).
+// La descripción de la card se arma con el autor y el género (ver adaptadores).
 const FORM_VACIO = {
   name: "",
   isbn: "",
@@ -18,6 +18,8 @@ const FORM_VACIO = {
   genero: "novela",
   anio: "",
   autor: "",
+  // la tapa: acá no va un texto, va el ARCHIVO que elige el usuario
+  imagen: null,
 };
 
 function CreateProductPage() {
@@ -30,7 +32,15 @@ function CreateProductPage() {
   // Esto resuelve un problema: como tengo un objeto, ¿cómo sabe react cuál de
   // todos los campos del formulario disparó el evento del cambio?
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, files } = e.target;
+
+    // un input de tipo file no tiene "value": tiene e.target.files, una lista.
+    // Como subimos una sola imagen, nos quedamos con la primera.
+    if (type === "file") {
+      setForm({ ...form, [name]: files[0] ?? null });
+      return;
+    }
+
     setForm({
       // ... este spread evita que se sobreescriban los campos no editados
       ...form,
@@ -114,6 +124,24 @@ function CreateProductPage() {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="mb-3">
+          {/* ⭐ LA TAPA.
+              accept="image/*" filtra lo que muestra el explorador de archivos, pero
+              es solo comodidad: el que decide de verdad es el fileFilter del back. */}
+          <label className="form-label" htmlFor="imagen">Tapa (opcional)</label>
+          <input className="form-control" onChange={handleInputChange}
+            type="file" accept="image/*" name="imagen" id="imagen" />
+
+          {form.imagen && (
+            <p className="form-text mb-0">
+              {form.imagen.name} · {Math.round(form.imagen.size / 1024)} KB
+              {form.imagen.size > 5 * 1024 * 1024 && (
+                <span className="text-danger"> — pesa más de 5 MB, el back la va a rechazar</span>
+              )}
+            </p>
+          )}
         </div>
 
         <button className="btn btn-primary me-2" type="submit">Crear libro</button>

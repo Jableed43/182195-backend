@@ -37,13 +37,23 @@ export class ApiError extends Error {
 export async function api(metodo, ruta, { body, porDefecto = "Error al conectar con el servidor" } = {}) {
     const token = leerToken()
 
+    // Hay dos formas de mandar datos, y se eligen solas segun lo que llegue:
+    //   objeto comun -> JSON            (lo de siempre)
+    //   FormData     -> multipart       (cuando hay un ARCHIVO)
+    const esArchivo = body instanceof FormData
+
     const response = await fetch(`${API_URL}${ruta}`, {
         method: metodo,
         headers: {
-            ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+            // ⚠️ Con FormData NO se pone Content-Type a proposito.
+            // El navegador lo arma solo y le agrega la "frontera" (boundary) que
+            // separa los campos del multipart. Si lo escribimos nosotros, va sin
+            // frontera y el back no puede leer nada: responde 400.
+            ...(body !== undefined && !esArchivo ? { "Content-Type": "application/json" } : {}),
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        // el FormData viaja tal cual; un objeto comun se convierte a texto JSON
+        body: body === undefined ? undefined : esArchivo ? body : JSON.stringify(body),
     })
 
     if (!response.ok) {
