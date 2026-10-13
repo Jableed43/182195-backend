@@ -106,7 +106,7 @@ export const crearPedidoService = async (usuarioId) => {
 // 2 · MIS PEDIDOS                  GET /api/pedidos
 // ═══════════════════════════════════════════════════════════════
 export const listarMisPedidosService = async (usuarioId) => {
-  // find filtrando por usuario, ordenado del más nuevo al más viejo
+  return await Pedido.find({ usuario: usuarioId }).sort({ createdAt: -1 });
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -117,10 +117,20 @@ export const listarMisPedidosService = async (usuarioId) => {
 // permitirRoles NO puede hacer esto: sabe el ROL, no de quién es el recurso.
 // Por eso la comprobación va en el SERVICE, que es el que tiene el documento.
 const buscarPedidoPropio = async (id, usuarioId) => {
-  // findById → si no existe, ErrorApp(..., 404)
+  const pedido = await Pedido.findById(id);
+
+  if (!pedido) {
+    throw new ErrorApp("No existe ese pedido", 404);
+  }
+
   // ⚠️ pedido.usuario es un ObjectId y usuarioId es un string:
   //    sin .toString() NUNCA son iguales
-  // si no es suyo → ErrorApp(..., 403)   ← 403 y no 404: existe, pero no es tuyo
+  if (pedido.usuario.toString() !== usuarioId) {
+    // 403 y no 404: existe, pero no es tuyo
+    throw new ErrorApp("Ese pedido no es tuyo", 403);
+  }
+
+  return pedido;
 };
 
 export const obtenerMiPedidoService = async (id, usuarioId) => {
@@ -132,24 +142,46 @@ export const obtenerMiPedidoService = async (id, usuarioId) => {
 // ═══════════════════════════════════════════════════════════════
 // Cambia el estado solo si está en el estado esperado, en UNA operación.
 const cambiarEstado = async (id, usuarioId, desde, hacia) => {
-  // primero el dueño (si no es suyo, ni miramos el estado)
-  // después findOneAndUpdate({ _id, estado: desde }, { estado: hacia })
-  // si no matcheó → existe pero está en otro estado → ErrorApp(..., 409)
+  // primero el dueño: si no es suyo, ni miramos el estado
+  await buscarPedidoPropio(id, usuarioId);
+
+  const pedido = await Pedido.findOneAndUpdate(
+    { _id: id, estado: desde },
+    { estado: hacia },
+    { returnDocument: "after" },
+  );
+
+  if (pedido) return pedido;
+
+  // no matcheó el filtro: existe (ya lo vimos) pero está en otro estado
+  const existente = await Pedido.findById(id);
+  throw new ErrorApp(
+    `No se puede pasar a "${hacia}" un pedido que está "${existente.estado}"`,
+    409,
+  );
 };
 
 export const pagarPedidoService = async (id, usuarioId) => {
-  // pendiente → pagado
+  return await cambiarEstado(id, usuarioId, "pendiente", "pagado");
 };
 
 export const cancelarPedidoService = async (id, usuarioId) => {
-  // pendiente → cancelado
-  // ⭐ y DEVOLVER el stock de cada línea: es la misma compensación del catch
-  //    de arriba, pero acá a propósito, porque es una regla de negocio.
+  const pedido = await cambiarEstado(id, usuarioId, "pendiente", "cancelado");
+
+  // ⭐ cancelar DEVUELVE el stock: es la misma compensación del catch de
+  //    arriba, pero acá a propósito, porque es una regla de negocio y no un error.
+  for (const linea of pedido.items) {
+    await Libro.updateOne({ _id: linea.libro }, { $inc: { stock: linea.cantidad } });
+  }
+
+  return pedido;
 };
 
 // ═══════════════════════════════════════════════════════════════
 // 5 · PARA EL STAFF                GET /api/pedidos/todos
 // ═══════════════════════════════════════════════════════════════
 export const listarTodosPedidosService = async () => {
-  // todos los pedidos, con populate del nombre del comprador
+  return await Pedido.find()
+    .populate("usuario", "nombre apellido email")
+    .sort({ createdAt: -1 });
 };
