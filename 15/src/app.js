@@ -31,6 +31,8 @@ import authRoutes from "./routes/authRoutes.js"
 import pedidoRoutes from "./routes/pedidoRoutes.js"
 import { manejarErrores } from './middleware/manejarErrores.js'
 import { CARPETA_IMAGENES } from './utils/config.js'
+import swaggerUi from "swagger-ui-express"
+import { especificacion } from './docs/swagger.js'
 
 const app = express()
 
@@ -43,6 +45,15 @@ app.use(express.json())
 
 // clase 23 · servir las imágenes guardadas en disco (solo hace falta con STORAGE=local)
 app.use(`/${CARPETA_IMAGENES}`, express.static(CARPETA_IMAGENES))
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(especificacion, {
+    customSiteTitle: "Api Biblioteca - documentación",
+    swaggerOptions: { persistAuthorization: true }
+}))
+
+app.get("/api-docs.json", (req, res) => {
+    res.json(especificacion)
+})
 
 // Agrupadores de rutas
 app.use("/api/auth", authRoutes)
