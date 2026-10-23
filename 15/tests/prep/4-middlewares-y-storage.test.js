@@ -14,10 +14,10 @@
 //    Es la única rareza de usar Jest con ESM que nos va a tocar.
 import { jest } from "@jest/globals"
 
-import { verificarToken } from "../src/middleware/verificarToken.js"
-import { permitirRoles } from "../src/middleware/permitirRoles.js"
-import { subir, borrar } from "../src/services/storage/local.js"
-import { imagenesEnLaCarpeta, vaciarCarpetaDeImagenes, tokenDe } from "./ayudas.js"
+import { verificarToken } from "../../src/middleware/verificarToken.js"
+import { permitirRoles } from "../../src/middleware/permitirRoles.js"
+import { subir, borrar } from "../../src/services/storage/local.js"
+import { imagenesEnLaCarpeta, vaciarCarpetaDeImagenes, tokenDe } from "../ayudas.js"
 
 // ═════════════════════════════════════════════════════════════
 //  UN MIDDLEWARE ES (req, res, next). Nada más.

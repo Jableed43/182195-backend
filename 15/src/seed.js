@@ -5,12 +5,36 @@
 // =====================================================================
 
 import mongoose from "mongoose";
-import { conectarDB } from "./db.js";
+import { conectarDB, esAtlas, uriSinPassword } from "./db.js";
 import Autor from "./models/autor.js";
 import Libro from "./models/libro.js";
 import Usuario from "./models/usuario.js";
 import Carrito from "./models/carrito.js";
 import Pedido from "./models/pedido.js";
+
+// ═══ clase 26 · EL CANDADO ═══
+//
+// Este script BORRA TODAS LAS COLECCIONES antes de sembrar. Mientras la
+// base estaba en tu máquina, el peor caso era perder tus propios datos.
+// Con Atlas la base puede ser COMPARTIDA: un "npm run seed" distraído le
+// borra el trabajo a todo el grupo.
+//
+// Por eso, contra Atlas hay que pedirlo a propósito:
+//     npm run seed -- --si
+//
+// Contra local sigue andando como siempre, sin pedir nada.
+if (esAtlas && !process.argv.includes("--si")) {
+    console.error("")
+    console.error("🛑 Estás por sembrar una base de Atlas, y sembrar BORRA TODO.")
+    console.error("")
+    console.error(`   base: ${uriSinPassword()}`)
+    console.error("")
+    console.error("   Si es la que querés vaciar, repetí el comando así:")
+    console.error("")
+    console.error("       npm run seed -- --si")
+    console.error("")
+    process.exit(1);
+}
 
 await conectarDB();
 

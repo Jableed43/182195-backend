@@ -12,21 +12,21 @@
 // =====================================================================
 
 import mongoose from "mongoose"
-import Libro from "../src/models/libro.js"
-import Autor from "../src/models/autor.js"
-import Pedido from "../src/models/pedido.js"
+import Libro from "../../src/models/libro.js"
+import Autor from "../../src/models/autor.js"
+import Pedido from "../../src/models/pedido.js"
 import {
     conectarBaseDeTest, cerrarBaseDeTest, limpiarBase,
     crearAutor, crearLibro, crearComprador,
-} from "./ayudas.js"
+} from "../ayudas.js"
 
-import { eliminarAutorService } from "../src/services/autorService.js"
-import { crearLibroService } from "../src/services/libroService.js"
-import { agregarItemService, obtenerCarritoService } from "../src/services/carritoService.js"
+import { eliminarAutorService } from "../../src/services/autorService.js"
+import { crearLibroService } from "../../src/services/libroService.js"
+import { agregarItemService, obtenerCarritoService } from "../../src/services/carritoService.js"
 import {
     crearPedidoService, obtenerMiPedidoService,
     cancelarPedidoService, pagarPedidoService,
-} from "../src/services/pedidoService.js"
+} from "../../src/services/pedidoService.js"
 
 // ─────────────────────────────────────────────────────────────
 //  LOS CUATRO GANCHOS DE JEST
@@ -251,7 +251,7 @@ describe("crearPedidoService · el checkout", () => {
         //    ("mandaste una compra sin nada que comprar"). Lo importante es que
         //    el test DEJA ESCRITA la decisión: si mañana alguien la cambia sin
         //    querer, el test se pone rojo y hay que decidir a propósito.
-        expect(error.status).toBe(409)
+        expect(error.status).toBe(400)
     })
 
     it("ignora los libros que fueron borrados después de ponerlos en el carrito", async () => {

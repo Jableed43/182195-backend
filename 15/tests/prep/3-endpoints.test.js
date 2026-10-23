@@ -22,14 +22,14 @@
 // =====================================================================
 
 import request from "supertest"
-import app from "../src/app.js"
-import Libro from "../src/models/libro.js"
+import app from "../../src/app.js"
+import Libro from "../../src/models/libro.js"
 import {
     conectarBaseDeTest, cerrarBaseDeTest, limpiarBase,
     crearLibro, crearAutor, crearComprador, crearVendedor,
     tokenDe, tokenFalso, tokenVencido,
     imagenesEnLaCarpeta, vaciarCarpetaDeImagenes,
-} from "./ayudas.js"
+} from "../ayudas.js"
 
 beforeAll(conectarBaseDeTest)
 afterAll(cerrarBaseDeTest)
@@ -263,9 +263,9 @@ describe("POST /api/libros con imagen · Multer", () => {
         expect(await Libro.countDocuments()).toBe(0)
     })
 
-    it("más de 5 MB → 400 (lo frena limits.fileSize)", async () => {
+    it("más de 4 MB → 400 (lo frena limits.fileSize)", async () => {
         const vendedora = await crearVendedor()
-        const pesada = Buffer.alloc(6 * 1024 * 1024, 1)   // 6 MB de unos
+        const pesada = Buffer.alloc(5 * 1024 * 1024, 1)   // 5 MB de unos
 
         const res = await request(app)
             .post("/api/libros")
@@ -276,7 +276,7 @@ describe("POST /api/libros con imagen · Multer", () => {
             .attach("imagen", pesada, { filename: "pesada.png", contentType: "image/png" })
 
         expect(res.status).toBe(400)
-        expect(res.body.error).toMatch(/5 MB/)
+        expect(res.body.error).toMatch(/4 MB/)
     })
 
     it("el campo mal nombrado → 400 y el mensaje dice cómo tiene que llamarse", async () => {

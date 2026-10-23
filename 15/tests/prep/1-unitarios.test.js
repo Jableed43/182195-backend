@@ -17,9 +17,9 @@
 //    .toThrow()     ¿esta función lanza un error?
 // =====================================================================
 
-import { nombreUnico } from "../src/services/storage/nombreUnico.js"
-import { ErrorApp } from "../src/utils/ErrorApp.js"
-import Libro from "../src/models/libro.js"
+import { nombreUnico } from "../../src/services/storage/nombreUnico.js"
+import { ErrorApp } from "../../src/utils/ErrorApp.js"
+import Libro from "../../src/models/libro.js"
 
 describe("nombreUnico", () => {
 
